@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Slovak Grammar Drill</title>
+<style>
+:root {
+  --bg: #f4f4ef;
+  --card: #ffffff;
+  --text: #1a1a2e;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --accent-bg: #dbeafe;
+  --ok: #16a34a;
+  --ok-bg: #dcfce7;
+  --err: #dc2626;
+  --err-bg: #fee2e2;
+  --border: #e5e7eb;
+  --shadow: 0 2px 10px rgba(0,0,0,0.07);
+  --r: 14px;
+  --rs: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100svh; display: flex; justify-content: center;
+}
+#app {
+  width: 100%; max-width: 460px;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; min-height: 100svh;
+}
+
+/* ── Screens ── */
+.screen { display: none; flex-direction: column; flex: 1; }
+.screen.active { display: flex; }
+
+/* ── Header ── */
+.hdr { display: flex; align-items: center; justify-content: space-between; padding: 6px 0 18px; }
+.hdr h1 { font-size: 17px; font-weight: 700; }
+.back-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 4px 8px 4px 0; color: var(--text); }
+
+/* ── Progress bar ── */
+.prog { height: 5px; background: var(--border); border-radius: 3px; margin-bottom: 18px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .35s ease; }
+
+/* ── Cards ── */
+.card { background: var(--card); border-radius: var(--r); padding: 20px; box-shadow: var(--shadow); margin-bottom: 10px; }
+
+/* ── Home hero ── */
+.hero { text-align: center; padding: 28px 0 22px; }
+.hero .flag { font-size: 44px; margin-bottom: 10px; }
+.hero h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.hero p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+/* ── Stats grid ── */
+.sgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.scard { background: var(--card); border-radius: var(--rs); padding: 14px 8px; text-align: center; box-shadow: var(--shadow); }
+.scard .val { font-size: 26px; font-weight: 800; color: var(--accent); line-height: 1; }
+.scard .lbl { font-size: 10px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: .4px; }
+
+/* ── Weak points ── */
+.weak-hdr { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+.weak-row { background: var(--card); border-radius: var(--rs); padding: 11px 14px; margin-bottom: 6px;
+  display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+.weak-row .topic { font-size: 13px; font-weight: 500; flex: 1; margin-right: 10px; }
+.dots { display: flex; gap: 4px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+.dot.on { background: var(--accent); }
+.dot.bad { background: var(--err); }
+
+/* ── Buttons ── */
+.btn { display: block; width: 100%; padding: 15px; border-radius: var(--r); border: none;
+  font-size: 16px; font-weight: 600; cursor: pointer; transition: transform .12s; text-align: center; }
+.btn:active { transform: scale(.98); }
+.btn-p { background: var(--accent); color: #fff; margin-bottom: 10px; }
+.btn-s { background: var(--card); color: var(--text); box-shadow: var(--shadow); margin-bottom: 10px; }
+
+/* ── Answer options ── */
+.opts { display: grid; gap: 8px; margin-top: 14px; }
+.opt { background: var(--card); border: 2px solid var(--border); border-radius: var(--rs);
+  padding: 13px 14px; display: flex; align-items: center; gap: 11px;
+  cursor: pointer; font-size: 16px; transition: border-color .12s, background .12s; }
+.opt:active:not(:disabled) { transform: scale(.99); }
+.opt-lbl { width: 24px; height: 24px; border-radius: 50%; background: var(--bg); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); }
+.opt.ok { background: var(--ok-bg); border-color: var(--ok); }
+.opt.ok .opt-lbl { background: var(--ok); color: #fff; }
+.opt.err { background: var(--err-bg); border-color: var(--err); }
+.opt.err .opt-lbl { background: var(--err); color: #fff; }
+.opt:disabled { cursor: default; }
+
+/* ── Question card ── */
+.tag { display: inline-block; background: var(--accent-bg); color: var(--accent);
+  font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; margin-bottom: 14px; }
+.qsent { font-size: 20px; line-height: 1.55; font-weight: 500; }
+.blank { display: inline-block; min-width: 72px; border-bottom: 3px solid var(--accent);
+  padding: 0 3px; color: transparent; user-select: none; }
+.qtrans { font-size: 13px; color: var(--muted); font-style: italic; margin-top: 7px; }
+
+/* ── Mode toggle ── */
+.mode-row { text-align: right; margin-bottom: 6px; }
+.mode-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer;
+  text-decoration: underline; padding: 3px; }
+
+/* ── Type input ── */
+.type-row { display: flex; gap: 8px; margin-top: 12px; }
+.type-in { flex: 1; border: 2px solid var(--border); border-radius: var(--rs);
+  padding: 13px 14px; font-size: 16px; outline: none; transition: border-color .15s; }
+.type-in:focus { border-color: var(--accent); }
+.type-in.ok { border-color: var(--ok); background: var(--ok-bg); }
+.type-in.err { border-color: var(--err); background: var(--err-bg); }
+.check-btn { background: var(--accent); color: #fff; border: none; border-radius: var(--rs);
+  padding: 13px 18px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+/* ── Feedback ── */
+.fb { border-radius: var(--r); padding: 18px; margin-top: 10px;
+  animation: fadeUp .2s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.fb.ok { background: var(--ok-bg); border: 1px solid var(--ok); }
+.fb.err { background: var(--err-bg); border: 1px solid var(--err); }
+.fb-result { font-size: 15px; font-weight: 700; margin-bottom: 11px; }
+.fb-result.ok { color: var(--ok); }
+.fb-result.err { color: var(--err); }
+.fb-sent { font-size: 16px; font-weight: 500; padding: 11px; background: rgba(255,255,255,.7);
+  border-radius: var(--rs); margin-bottom: 10px; line-height: 1.5; }
+.ans { color: var(--ok); font-weight: 700; text-decoration: underline; text-decoration-color: var(--ok); }
+.fb-rule { font-size: 13px; line-height: 1.65; color: var(--text); }
+.fb-notes { font-size: 12px; color: var(--muted); line-height: 1.55;
+  padding-top: 8px; border-top: 1px solid rgba(0,0,0,.1); margin-top: 8px; }
+
+/* ── Session header extras ── */
+.sess-info { font-size: 13px; color: var(--muted); }
+.streak { display: inline-flex; align-items: center; gap: 3px;
+  background: #fef3c7; color: #d97706; border-radius: 20px; padding: 3px 9px; font-size: 12px; font-weight: 700; }
+
+/* ── Summary ── */
+.sum-score { text-align: center; padding: 18px 0 14px; }
+.sum-pct { font-size: 60px; font-weight: 800; color: var(--accent); line-height: 1; }
+.sum-frac { font-size: 16px; color: var(--muted); margin-top: 3px; }
+.sum-msg { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ HOME ═══ -->
+  <div id="home" class="screen">
+    <div class="hdr"><h1>Slovak Drill</h1><span style="font-size:26px">🇸🇰</span></div>
+    <div class="hero">
+      <div class="flag">🇸🇰</div>
+      <h2>Grammar Practice</h2>
+      <p>Fill-in-the-blank sentences from your study conversation.<br>Weak points surface more often.</p>
+    </div>
+    <div class="sgrid">
+      <div class="scard"><div class="val" id="s-done">0</div><div class="lbl">Answered</div></div>
+      <div class="scard"><div class="val" id="s-acc">—</div><div class="lbl">Accuracy</div></div>
+      <div class="scard"><div class="val" id="s-mastered">0</div><div class="lbl">Mastered</div></div>
+    </div>
+    <div id="weak-sec" style="margin-bottom:10px;display:none">
+      <div class="weak-hdr">Needs Work</div>
+      <div id="weak-list"></div>
+    </div>
+    <button class="btn btn-p" onclick="startSession()">Start Session  (10 questions)</button>
+    <button class="btn btn-s" onclick="if(confirm('Reset all progress?')){resetProg();}">Reset Progress</button>
+  </div>
+
+  <!-- ═══ QUIZ ═══ -->
+  <div id="quiz" class="screen">
+    <div class="hdr">
+      <button class="back-btn" onclick="endSession()">←</button>
+      <span class="sess-info" id="q-count"></span>
+      <span id="streak-el"></span>
+    </div>
+    <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
+
+    <div class="mode-row">
+      <button class="mode-btn" onclick="toggleMode()">Switch to <span id="mode-lbl">typed input</span></button>
+    </div>
+
+    <div class="card">
+      <div class="tag" id="q-tag"></div>
+      <div class="qsent" id="q-sent"></div>
+      <div class="qtrans" id="q-trans"></div>
+      <div class="opts" id="mc-opts"></div>
+      <div class="type-row" id="type-row" style="display:none">
+        <input id="type-in" class="type-in" placeholder="Type your answer…"
+          onkeydown="if(event.key==='Enter')checkTyped()">
+        <button class="check-btn" onclick="checkTyped()">Check</button>
+      </div>
+    </div>
+
+    <div id="fb-area"></div>
+    <button class="btn btn-p" id="next-btn" style="display:none;margin-top:10px" onclick="nextQ()">Continue →</button>
+  </div>
+
+  <!-- ═══ SUMMARY ═══ -->
+  <div id="summary" class="screen">
+    <div class="hdr"><h1>Session Complete</h1></div>
+    <div class="card">
+      <div class="sum-score">
+        <div class="sum-pct" id="sum-pct">0%</div>
+        <div class="sum-frac" id="sum-frac"></div>
+      </div>
+    </div>
+    <div class="card" id="sum-detail"></div>
+    <button class="btn btn-p" onclick="startSession()">Another Session</button>
+    <button class="btn btn-s" onclick="showHome()">Home</button>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// QUESTIONS
+// Each: id, tag, sentence (contains ___), answer, distractors[3],
+//       full (HTML with <b class="ans">answer</b>), translation, rule, notes
+// ─────────────────────────────────────────────────────────────────────────────
+const QS = [
+
+  // ── stáť za ──────────────────────────────────────────────────────────────
+  { id:"stv1", tag:"stáť za",
+    sentence:"Stojí to ___ to.",
+    answer:"za", distractors:["do","na","pre"],
+    full:"Stojí to <b class='ans'>za</b> to.", translation:"It is worth it.",
+    rule:"<b>stáť za + accusative</b> = to be worth X. <em>Za</em> is always the preposition; any accusative noun fills the slot after it: stáť za úsilie, za pozornosť.",
+    notes:"Learners often think 'to' is part of the phrase — it's just the default pronoun for 'it'. The essential word is <em>za</em>." },
+
+  { id:"stv2", tag:"stáť za",
+    sentence:"Nestojí to za ___.",
+    answer:"nič", distractors:["nikto","nikde","nikdy"],
+    full:"Nestojí to za <b class='ans'>nič</b>.", translation:"It is worth nothing.",
+    rule:"<b>stáť za + accusative.</b> <em>Nič</em> (nothing) fills the accusative slot here as the measure of worth.",
+    notes:"Compare: nestojí to za zmienku = it's not worth mentioning; stojí to za úsilie = it's worth the effort." },
+
+  { id:"stv3", tag:"stáť za",
+    sentence:"Stojí to ___ námahu?",
+    answer:"za", distractors:["do","na","pre"],
+    full:"Stojí to <b class='ans'>za</b> námahu?", translation:"Is it worth the trouble?",
+    rule:"<b>stáť za + accusative.</b> The preposition is always <em>za</em> — it never varies. What follows can be any accusative noun.",
+    notes:"" },
+
+  // ── treba + infinitive ────────────────────────────────────────────────────
+  { id:"trb1", tag:"treba + infinitive",
+    sentence:"Okrem gramatiky treba ___ aj kultúru.",
+    answer:"poznať", distractors:["poznáš","poznajú","poznáme"],
+    full:"Okrem gramatiky treba <b class='ans'>poznať</b> aj kultúru.", translation:"Besides grammar, one also needs to know culture.",
+    rule:"<b>treba is impersonal</b> — it takes an <em>infinitive</em> directly, never a conjugated verb. It means 'it is necessary / one needs to'.",
+    notes:"treba poznáš is ungrammatical. Compare: musíš poznať (you must know — personal) vs treba poznať (one needs to know — impersonal)." },
+
+  { id:"trb2", tag:"treba + infinitive",
+    sentence:"Treba to ___.",
+    answer:"vedieť", distractors:["vie","viem","vedia"],
+    full:"Treba to <b class='ans'>vedieť</b>.", translation:"One needs to know this.",
+    rule:"<b>treba + infinitive.</b> Infinitives end in <em>-ť</em>. Conjugated forms (vie, viem, vedia) are never possible after treba.",
+    notes:"The 'you' in English translations is just how English handles impersonals — there is no subject in the Slovak." },
+
+  // ── Aspect ───────────────────────────────────────────────────────────────
+  { id:"asp1", tag:"Aspect: imperfective vs perfective",
+    sentence:"Ona ___ a povedala: Uži si to, kým môžeš.",
+    answer:"usmievala sa", distractors:["usmiala sa","usmeje sa","usmieva sa"],
+    full:"Ona <b class='ans'>usmievala sa</b> a povedala: Uži si to, kým môžeš.", translation:"She was smiling and said: Enjoy it while you can.",
+    rule:"<b>Imperfective past = ongoing background state.</b> <em>Usmievala sa</em> (imperfective) = she was in a state of smiling while she spoke. <em>Usmiala sa</em> (perfective) would be a single flash of a smile — a completed event.",
+    notes:"Use imperfective when the action is the backdrop/context for something else. Use perfective for a discrete event." },
+
+  { id:"asp2", tag:"Aspect: imperfective vs perfective",
+    sentence:"Vybehol z domu a ___.",
+    answer:"kričal", distractors:["zakričal","kričí","kričíme"],
+    full:"Vybehol z domu a <b class='ans'>kričal</b>.", translation:"He ran out of the house shouting.",
+    rule:"<b>Perfective + a + imperfective.</b> <em>Vybehol</em> (perf) = the single event of running out. <em>Kričal</em> (imperf) = the shouting was ongoing before, during, and after. <em>Zakričal</em> would mean one single shout.",
+    notes:"Slovak 'verb + a + imperfective verb' → English 'verb + -ing participle'. The <em>a</em> is neutral — the verb aspects do all the work." },
+
+  { id:"asp3", tag:"Aspect: imperfective vs perfective",
+    sentence:"Snažím sa ___ každý problém hneď.",
+    answer:"riešiť", distractors:["vyriešiť","riešenie","vyriešenie"],
+    full:"Snažím sa <b class='ans'>riešiť</b> každý problém hneď.", translation:"I try to deal with every problem immediately.",
+    rule:"<b>riešiť (imperfective)</b> = the ongoing process of handling/grappling. <em>Vyriešiť (perfective)</em> = to solve/resolve completely. 'Trying to deal with' is a process, not a completed outcome.",
+    notes:"imperfective riešiť = dealing with; perfective vyriešiť = having solved. Same distinction applies to other verb pairs." },
+
+  { id:"asp4", tag:"Aspect: imperfective vs perfective",
+    sentence:"Ešte som ne___.",
+    answer:"dojedol", distractors:["jedol","jedal","zjedol"],
+    full:"Ešte som ne<b class='ans'>dojedol</b>.", translation:"I haven't finished eating yet (but I will).",
+    rule:"<b>ešte + negative perfective past</b> = not yet completed, but intending to. The <em>do-</em> prefix on dojesť means eating-to-completion. The negative perfective = that completion hasn't happened yet.",
+    notes:"Nedojedol ≠ nejedol. Nedojedol = didn't finish eating. Nejedol = didn't eat at all. The prefix do- is the key." },
+
+  // ── nič vs žiadny ─────────────────────────────────────────────────────────
+  { id:"nic1", tag:"nič vs žiadny",
+    sentence:"Nepijem ___.",
+    answer:"nič", distractors:["žiadny","žiadne","žiadna"],
+    full:"Nepijem <b class='ans'>nič</b>.", translation:"I drink nothing.",
+    rule:"<b>nič = nothing (pronoun)</b> — stands alone, replaces a noun entirely. No noun follows nič.",
+    notes:"Compare: nepijem nič (I drink nothing — nič stands alone) vs nepijem žiadny čaj (I drink no tea — žiadny modifies čaj)." },
+
+  { id:"nic2", tag:"nič vs žiadny",
+    sentence:"Nepijem ___ čaj.",
+    answer:"žiadny", distractors:["nič","žiadne","žiadna"],
+    full:"Nepijem <b class='ans'>žiadny</b> čaj.", translation:"I drink no tea.",
+    rule:"<b>žiadny = no/not any (determiner)</b> — modifies a noun. <em>Žiadny</em> is masculine (čaj is masculine). It agrees with the noun in gender: žiadny (masc), žiadna (fem), žiadne (neuter).",
+    notes:"nič would leave čaj without a determiner. žiadny is the Slovak equivalent of 'no' as an adjective — extremely high-frequency." },
+
+  { id:"nic3", tag:"nič vs žiadny",
+    sentence:"___ neboli v obchode.",
+    answer:"Žiadne", distractors:["Nič","Nikto","Nikde"],
+    full:"<b class='ans'>Žiadne</b> neboli v obchode.", translation:"There weren't any in the shop.",
+    rule:"<b>žiadne (neuter plural)</b> = there weren't any of the specific things being discussed. <em>Nič</em> would mean 'nothing at all existed' — a stronger, different statement.",
+    notes:"žiadne here refers back to an implied noun (the specific product). Nič would be absolute: nothing whatsoever was in the shop." },
+
+  { id:"nic4", tag:"nič vs žiadny",
+    sentence:"Nie je ___ problém.",
+    answer:"žiadny", distractors:["nič","nikto","nikdy"],
+    full:"Nie je <b class='ans'>žiadny</b> problém.", translation:"There is no problem.",
+    rule:"<b>žiadny (masculine)</b> modifies <em>problém</em>. Compare: Nie je nič (pronoun, standalone) vs Nie je žiadny problém (adjective modifying a noun).",
+    notes:"Paradigm: žiadny problém (masc), žiadna šanca (fem), žiadne peniaze (neuter pl), žiadni ľudia (masc anim pl)." },
+
+  // ── Double negative ───────────────────────────────────────────────────────
+  { id:"dbl1", tag:"Double negative",
+    sentence:"Celú noc nepovedal ani ___.",
+    answer:"slovo", distractors:["slové","slovom","slovách"],
+    full:"Celú noc nepovedal ani <b class='ans'>slovo</b>.", translation:"He didn't say a single word all night.",
+    rule:"<b>ani = 'not even a single'.</b> It intensifies the negation. The verb must also be negative (nepovedal). Slovo stays in accusative (neuter acc = nom form).",
+    notes:"ani is the negative pole of the aj/ani pair: ani jeden (not a single one), ani raz (not once), ani trochu (not even a little), ani neviem (I don't even know)." },
+
+  { id:"dbl2", tag:"Double negative",
+    sentence:"Nikto ___ prišiel.",
+    answer:"neprišiel", distractors:["prišiel","príde","prichádza"],
+    full:"Nikto <b class='ans'>neprišiel</b>.", translation:"Nobody came.",
+    rule:"<b>Double negative is obligatory in Slovak.</b> When a negative word (nikto, nič, nikdy, žiadny, ani) is present, the verb must also be negated. 'Nikto prišiel' is ungrammatical.",
+    notes:"Rule: if there's a negative word in the sentence, the verb must also carry ne-. This applies to: nikto, nič, nikdy, nikde, žiadny, ani — always." },
+
+  // ── sa vs si ──────────────────────────────────────────────────────────────
+  { id:"sas1", tag:"Reflexive: sa vs si",
+    sentence:"Každý deň ___ učím niečo nové.",
+    answer:"sa", distractors:["si","mu","jej"],
+    full:"Každý deň <b class='ans'>sa</b> učím niečo nové.", translation:"Every day I learn something new.",
+    rule:"<b>sa = reflexive accusative.</b> učiť sa = teach oneself = learn. Sa is fixed for this verb — inseparable.",
+    notes:"The choice sa vs si is fixed per verb and cannot be swapped. Verbs taking si tend to involve internalising something into your own mind." },
+
+  { id:"sas2", tag:"Reflexive: sa vs si",
+    sentence:"Každý deň ___ tiež uvedomujem, čo ešte neviem.",
+    answer:"si", distractors:["sa","mu","ho"],
+    full:"Každý deň <b class='ans'>si</b> tiež uvedomujem, čo ešte neviem.", translation:"Every day I also realise what I still don't know.",
+    rule:"<b>si = reflexive dative.</b> uvedomiť si = make oneself aware = to realise. Si is fixed for this verb — it signals internalising something into your own awareness.",
+    notes:"Key si verbs: uvedomiť si, predstaviť si, pamätať si, myslieť si, všimnúť si, zapamätať si, užiť si, pozrieť si." },
+
+  { id:"sas3", tag:"Reflexive: sa vs si",
+    sentence:"Neviem ___ to predstaviť.",
+    answer:"si", distractors:["sa","mu","jej"],
+    full:"Neviem <b class='ans'>si</b> to predstaviť.", translation:"I can't picture / imagine it.",
+    rule:"<b>predstaviť si</b> = to imagine (presenting internally to your own mind). Without si: predstaviť niekoho = to introduce someone to others. The si completely changes the meaning.",
+    notes:"Related: predstava = mental image/notion (nemám ani predstavu = I have no idea whatsoever — very common phrase)." },
+
+  { id:"sas4", tag:"Reflexive: sa vs si",
+    sentence:"Zobral som ___ príliš veľa.",
+    answer:"si", distractors:["sa","ho","to"],
+    full:"Zobral som <b class='ans'>si</b> príliš veľa.", translation:"I took on too much.",
+    rule:"<b>Dative si of benefit (optional).</b> Any transitive verb + si means the action is for your own benefit. Zobrať si = take on/take for yourself. Zobrať (without si) = take physically.",
+    notes:"Same pattern: kúpiť si (buy for yourself), urobiť si (make for yourself), dať si kávu (have a coffee). This si is optional — adding it shifts the meaning toward 'onto myself'." },
+
+  // ── ešte vs stále ─────────────────────────────────────────────────────────
+  { id:"est1", tag:"ešte vs stále",
+    sentence:"A ___ stále neviem presne prečo.",
+    answer:"ešte", distractors:["len","už","ani"],
+    full:"A <b class='ans'>ešte</b> stále neviem presne prečo.", translation:"And even now I still don't know exactly why.",
+    rule:"<b>ešte stále</b> = 'even still / and yet still'. The ešte adds mild surprise — something that should have resolved by now hasn't. More emphatic than stále alone.",
+    notes:"ešte often carries a 'contrary to expectation' flavour: ešte raz (once more — try again), ešte lepší (even better), ešte nie (not yet — expected but not arrived)." },
+
+  { id:"est2", tag:"ešte vs stále",
+    sentence:"___ som nedojedol.",
+    answer:"Ešte", distractors:["Stále","Vždy","Nikdy"],
+    full:"<b class='ans'>Ešte</b> som nedojedol.", translation:"I haven't finished eating yet (but I will).",
+    rule:"<b>ešte + negative</b> = not yet, but intending to continue. Ešte = remaining/not yet gone. Stále = unchanged ongoing state — wrong here since you plan to finish.",
+    notes:"Pattern: ešte som nešiel (haven't gone yet), ešte som nečítal (haven't read yet). Ešte signals remaining potential, not permanent absence." },
+
+  { id:"est3", tag:"ešte vs stále",
+    sentence:"Som ___ unavený.",
+    answer:"stále", distractors:["ešte","len","vždy"],
+    full:"Som <b class='ans'>stále</b> unavený.", translation:"I am still tired (unchanged, ongoing).",
+    rule:"<b>stále = continuously / as before</b> — the state is unchanged and persisting. Ešte would suggest the tiredness is remaining/not yet gone, but stále emphasises an ongoing unchanged state.",
+    notes:"stále alone: stále čakám (still waiting), stále ho ľúbim (still love him). No surprise implied — just simple continuation." },
+
+  // ── Adjective agreement ───────────────────────────────────────────────────
+  { id:"adj1", tag:"Adjective agreement",
+    sentence:"Chcem zjesť cel___ jedlo.",
+    answer:"celé", distractors:["celý","celá","celom"],
+    full:"Chcem zjesť <b class='ans'>celé</b> jedlo.", translation:"I want to eat the whole meal.",
+    rule:"<b>Adjectives agree in gender.</b> Jedlo is neuter → neuter form celé. Masculine = celý, feminine = celá, neuter = celé.",
+    notes:"Common neuter nouns: jedlo, auto, mesto, cvičenie, slovo, ráno. They all take the -é adjective ending in nominative/accusative." },
+
+  { id:"adj2", tag:"Adjective agreement",
+    sentence:"Kokos___ mlieko.",
+    answer:"kokosové", distractors:["kokosový","kokosová","kokosovom"],
+    full:"<b class='ans'>Kokosové</b> mlieko.", translation:"Coconut milk.",
+    rule:"<b>Adjective from noun + gender agreement.</b> kokos → kokosový. Mlieko is neuter → neuter form kokosové.",
+    notes:"Derivation pattern: kokos→kokosový, stroj→strojový, les→lesný. Always check the noun's gender before choosing the ending." },
+
+  { id:"adj3", tag:"Adjective agreement",
+    sentence:"Dnešn___ tréning bol ťažký.",
+    answer:"dnešný", distractors:["dnešné","dnešnej","dnešná"],
+    full:"<b class='ans'>Dnešný</b> tréning bol ťažký.", translation:"Today's training was difficult.",
+    rule:"<b>dnešný = today's (adjective).</b> Tréning is masculine → masculine form dnešný. Forms: dnešný (masc), dnešná (fem), dnešné (neuter), dnešného (masc gen — common in dnešného dňa = as of today).",
+    notes:"" },
+
+  { id:"adj4", tag:"Adjective agreement",
+    sentence:"Prvé písomné precvičenie je ___.",
+    answer:"dnes", distractors:["dneš","dnešný","dnešné"],
+    full:"Prvé písomné precvičenie je <b class='ans'>dnes</b>.", translation:"The first writing practice is today.",
+    rule:"<b>dnes = today (adverb).</b> Never changes form. Dneš is not a word. Dnešný/dnešné are adjectives — they need a noun. End position here gives emphasis: today is the new information.",
+    notes:"End-position emphasis is natural in Slovak: Prvé precvičenie je dnes (dnes last = emphatic) vs Dnes je prvé precvičenie (dnes first = neutral statement)." },
+
+  // ── Genitive ──────────────────────────────────────────────────────────────
+  { id:"gen1", tag:"Genitive after nouns",
+    sentence:"Teraz je čas ___.",
+    answer:"prechodu", distractors:["prechod","prechodom","prechode"],
+    full:"Teraz je čas <b class='ans'>prechodu</b>.", translation:"Now is a time of transition.",
+    rule:"<b>Noun + noun → second noun in genitive.</b> What kind of time? Time of transition → prechodu (genitive of prechod). Rule: 'if you can ask of what? after a noun, the answer is genitive'.",
+    notes:"Applies even when English 'of' is not possessive. Same pattern: pohár vody, koniec dňa, cieľ kalórií, potešenie zo venčeka." },
+
+  { id:"gen2", tag:"Genitive after nouns",
+    sentence:"Mám viac ___.",
+    answer:"svalov", distractors:["svaly","svalmi","svaloch"],
+    full:"Mám viac <b class='ans'>svalov</b>.", translation:"I have more muscle.",
+    rule:"<b>Quantity words (viac, menej, veľa, málo, dosť, priveľa) always take genitive.</b> svaly → svalov (genitive plural).",
+    notes:"Same rule: menej tuku (less fat), veľa času (a lot of time), pohár vody (glass of water), bolo priveľa tmy (there was too much darkness)." },
+
+  { id:"gen3", tag:"Genitive after nouns",
+    sentence:"Bolo priveľa ___.",
+    answer:"tmy", distractors:["tma","tmou","tme"],
+    full:"Bolo priveľa <b class='ans'>tmy</b>.", translation:"There was too much darkness.",
+    rule:"<b>priveľa + genitive.</b> tma → tmy (genitive singular feminine). Slovak prefers noun constructions where English uses adjectives: 'there was too much darkness' rather than 'it was too dark'.",
+    notes:"Both are valid: bolo priveľa tmy (quantitative, everyday) and bola tam príliš veľká tma (adjectival, more literary). The Alice translation chose the noun form." },
+
+  // ── aby + subjunctive ─────────────────────────────────────────────────────
+  { id:"aby1", tag:"aby + subjunctive",
+    sentence:"Dlho som jej pomáhal bez toho, aby som ___ ako.",
+    answer:"vedel", distractors:["viem","vie","vedieť"],
+    full:"Dlho som jej pomáhal bez toho, aby som <b class='ans'>vedel</b> ako.", translation:"I helped her for a long time without knowing how.",
+    rule:"<b>aby triggers a subjunctive-like form.</b> After aby, the verb takes a form identical to past tense masculine — but the meaning is purpose/hypothetical, NOT past. Vedel here = 'without knowing'.",
+    notes:"The form looks like past tense (vedel som = I knew) but after aby it means 'so that I would know'. Aby is the signal that reinterprets the form. Same pattern with keby (if) and mal by (should)." },
+
+  { id:"aby2", tag:"aby + subjunctive",
+    sentence:"Prišiel som, aby sme sa ___.",
+    answer:"stretli", distractors:["stretneme","stretáme","stretol"],
+    full:"Prišiel som, aby sme sa <b class='ans'>stretli</b>.", translation:"I came so that we could meet.",
+    rule:"<b>aby + past-looking form = purpose.</b> Stretli looks like plural past tense — but after aby it expresses purpose: 'so that we would meet'. Slovak borrows past tense morphology for the subjunctive and uses conjunctions to signal it.",
+    notes:"aby = so that / in order that. The form after aby always matches the past tense form regardless of actual time reference." },
+
+  // ── čím...tým ─────────────────────────────────────────────────────────────
+  { id:"cim1", tag:"čím...tým",
+    sentence:"Čím viac cvičím, ___ chudší vyzerám.",
+    answer:"tým", distractors:["čím","len","ale"],
+    full:"Čím viac cvičím, <b class='ans'>tým</b> chudší vyzerám.", translation:"The more I train, the slimmer I look.",
+    rule:"<b>čím + comparative, tým + comparative</b> = the more X, the more Y. Čím always opens the first clause; tým always introduces the result clause.",
+    notes:"Productive template — insert any comparative: čím viac…, čím lepšie…, čím skôr tým lepšie (the sooner the better)." },
+
+  { id:"cim2", tag:"čím...tým",
+    sentence:"___ ďalej, tým lepšie.",
+    answer:"Čím", distractors:["Tým","Len","Ale"],
+    full:"<b class='ans'>Čím</b> ďalej, tým lepšie.", translation:"The further, the better.",
+    rule:"<b>čím always opens the clause.</b> Order is fixed: čím → comparative → comma → tým → comparative.",
+    notes:"Classic expression. čím ďalej tým viac = more and more (lit. the further the more)." },
+
+  // ── cez for time ─────────────────────────────────────────────────────────
+  { id:"cez1", tag:"cez for bounded time periods",
+    sentence:"___ víkend som cvičil.",
+    answer:"Cez", distractors:["Za","V","Počas"],
+    full:"<b class='ans'>Cez</b> víkend som cvičil.", translation:"I trained over the weekend.",
+    rule:"<b>cez = through a bounded time period</b> — a period with a clear start and end that you 'travel through'. Used with: víkend, deň, noc, prázdniny, leto, summer.",
+    notes:"Slovak conceptualises bounded periods as tunnels. cez deň = during the day; cez noc = through the night; cez prázdniny = over the holidays." },
+
+  { id:"cez2", tag:"cez for bounded time periods",
+    sentence:"___ posledné mesiace som sa veľa naučil.",
+    answer:"Za", distractors:["Cez","V","Pri"],
+    full:"<b class='ans'>Za</b> posledné mesiace som sa veľa naučil.", translation:"I learned a lot over the past months.",
+    rule:"<b>za = over a cumulative / backward-looking time span.</b> 'Months' is not a single bounded tunnel — it's a period looked back on cumulatively. Use v for specific points: v marci (in March).",
+    notes:"za posledné mesiace, za posledný rok. Compare: cez víkend (through the weekend — bounded). v marci (in March — specific point)." },
+
+  // ── Instrumental ──────────────────────────────────────────────────────────
+  { id:"ins1", tag:"Instrumental: movement through space",
+    sentence:"Ponáhľal sa ___.",
+    answer:"dlhou miestnosťou", distractors:["dlhú miestnosť","v dlhej miestnosti","cez dlhú miestnosť"],
+    full:"Ponáhľal sa <b class='ans'>dlhou miestnosťou</b>.", translation:"He hurried along/through the long room.",
+    rule:"<b>Instrumental = movement through/along a space.</b> No preposition needed — the instrumental ending alone expresses 'through/along'. Feminine instrumental: -á → -ou (dlhá→dlhou, miestnosť→miestnosťou).",
+    notes:"Same pattern: išiel úzkou uličkou (walked along the narrow alley), bežal tmavou chodbou (ran through the dark corridor). Very common in narrative prose." },
+
+  { id:"ins2", tag:"Instrumental: transport",
+    sentence:"Ísť autobus___.",
+    answer:"autobusom", distractors:["autobusu","autobuse","autobusy"],
+    full:"Ísť <b class='ans'>autobusom</b>.", translation:"To go by bus.",
+    rule:"<b>Instrumental for means of transport.</b> autobus → autobusom. No preposition — the case ending does the work English does with 'by'.",
+    notes:"ísť autobusom, ísť vlakom, ísť taxíkom, letieť lietadlom. More natural than zobrať autobus, which sounds like physically picking up the bus." },
+
+  { id:"ins3", tag:"Instrumental: każdým dňom",
+    sentence:"Slovník je každým ___ širší.",
+    answer:"dňom", distractors:["deň","dňa","dni"],
+    full:"Slovník je každým <b class='ans'>dňom</b> širší.", translation:"The vocabulary is wider with each passing day.",
+    rule:"<b>každým + instrumental = with each passing [time unit].</b> deň → dňom (instrumental). The instrumental expresses the unit by which progressive change is measured.",
+    notes:"každým dňom, každým rokom (each year), každým týždňom (each week), každou hodinou (each hour). Compare English 'day by day' — Slovak uses the case ending where English uses 'by'." },
+
+  // ── Numbers + case ────────────────────────────────────────────────────────
+  { id:"num1", tag:"Numbers and case",
+    sentence:"Za mnou sú tri ___.",
+    answer:"týždne", distractors:["týždňov","týždeň","týžne"],
+    full:"Za mnou sú tri <b class='ans'>týždne</b>.", translation:"Three difficult weeks are behind me.",
+    rule:"<b>2–4 take nominative plural.</b> Numbers 2, 3, 4: dva/tri/štyri týždne. Five and above take genitive plural (päť týždňov).",
+    notes:"Full system: 1 = nom sg (jeden týždeň) → 2–4 = nom pl (tri týždne) → 5+ = gen pl (päť týždňov). One of the less obvious Slovak rules." },
+
+  { id:"num2", tag:"Numbers and case",
+    sentence:"Päť ___.",
+    answer:"týždňov", distractors:["týždne","týždeň","týždňom"],
+    full:"Päť <b class='ans'>týždňov</b>.", translation:"Five weeks.",
+    rule:"<b>5+ take genitive plural.</b> týždeň → týždňov (genitive plural). Numbers five and above always trigger genitive plural.",
+    notes:"päť eur (five euros), desať ľudí (ten people), sto rokov (a hundred years). The genitive plural often involves vowel changes in the stem." },
+
+  // ── meškať vs neskoro ─────────────────────────────────────────────────────
+  { id:"mes1", tag:"meškať vs neskoro",
+    sentence:"Vlak ___.",
+    answer:"mešká", distractors:["je neskoro","neskoro prišiel","prišiel neskoro"],
+    full:"Vlak <b class='ans'>mešká</b>.", translation:"The train is delayed.",
+    rule:"<b>meškať = to be delayed / running late (ongoing state).</b> Describes a process of being behind schedule. 'Je neskoro' = it is late (time of day) — a completely different meaning.",
+    notes:"meškať o hodinu = to be an hour late. zmeškať = to miss something because you were too late (completed consequence). zdržať = to hold up / delay someone." },
+
+  { id:"mes2", tag:"meškať vs neskoro",
+    sentence:"Prišiel ___.",
+    answer:"neskoro", distractors:["mešká","meška","meškalo"],
+    full:"Prišiel <b class='ans'>neskoro</b>.", translation:"He arrived late.",
+    rule:"<b>neskoro = late (adverb, single point in time).</b> A snapshot — a moment that is late. For describing a single arrival event, neskoro is the right word.",
+    notes:"neskoro = late as a time descriptor; meškať = ongoing state of running behind schedule. Príliš neskoro = too late (point). Mešká o hodinu = is running an hour late (ongoing)." },
+
+  // ── svôj vs tvoj/môj ──────────────────────────────────────────────────────
+  { id:"svo1", tag:"svôj — reflexive possessive",
+    sentence:"Si veľmi blízko k ___mu cieľu.",
+    answer:"svojmu", distractors:["tvojmu","jemu","vášmu"],
+    full:"Si veľmi blízko k <b class='ans'>svojmu</b> cieľu.", translation:"You are very close to your goal.",
+    rule:"<b>When possessor = subject, use svôj.</b> Subject = ty; the cieľ belongs to ty → use reflexive possessive svojmu (dative of svôj). Tvojmu is not wrong but slightly redundant.",
+    notes:"svôj declines like a regular adjective: svojho, svojmu, svojím. Applies to all persons: vzal som si svoju tašku (I took my own bag), vzal svoju (he took his own)." },
+
+  { id:"svo2", tag:"svôj — reflexive possessive",
+    sentence:"Vzal som si ___ tašku.",
+    answer:"svoju", distractors:["moju","jeho","jej"],
+    full:"Vzal som si <b class='ans'>svoju</b> tašku.", translation:"I took my (own) bag.",
+    rule:"<b>svôj preferred when possessor = subject.</b> Subject = ja (I); the tašku belongs to ja → svoju (feminine accusative of svôj). Moju is not wrong, but svoju is the natural choice.",
+    notes:"" },
+
+  // ── -koľvek suffix ────────────────────────────────────────────────────────
+  { id:"kol1", tag:"-koľvek suffix",
+    sentence:"Príď ___.",
+    answer:"kedykoľvek", distractors:["niekedy","nikdy","vždy"],
+    full:"Príď <b class='ans'>kedykoľvek</b>.", translation:"Come anytime / Come whenever you like.",
+    rule:"<b>-koľvek = 'no matter which/when/who'.</b> kedy + koľvek = kedykoľvek = anytime, no restriction. Unlike niekedy (sometimes — vague indefinite), kedykoľvek means truly any time.",
+    notes:"System: kto→ktokoľvek, čo→čokoľvek, kde→kdekoľvek, kedy→kedykoľvek, ako→akokoľvek, aký→akýkoľvek. One suffix, whole family of words." },
+
+  { id:"kol2", tag:"-koľvek suffix",
+    sentence:"___ problém dokážeš vyriešiť.",
+    answer:"Akýkoľvek", distractors:["Nejaký","Žiadny","Každý"],
+    full:"<b class='ans'>Akýkoľvek</b> problém dokážeš vyriešiť.", translation:"Whatever problem comes up, you can solve it.",
+    rule:"<b>akýkoľvek = any kind of / whichever — genuinely open choice.</b> Nejaký = some (vague, there might be a better option), každý = every, žiadny = no/none.",
+    notes:"The -koľvek suffix emphasises that the choice is completely open — any option is equally valid, no restriction or preference implied." },
+
+  // ── Diminutives ───────────────────────────────────────────────────────────
+  { id:"dim1", tag:"Diminutive suffixes",
+    sentence:"Vianočný strom___.",
+    answer:"stromček", distractors:["strome","stromom","stromy"],
+    full:"Vianočný <b class='ans'>stromček</b>.", translation:"Christmas tree.",
+    rule:"<b>-ček is a diminutive suffix, not a case ending.</b> strom → stromček = little tree. Slovak uses diminutives very productively; stromček is the standard word for Christmas tree — no small size implied.",
+    notes:"Diminutive suffixes: -ček, -ek, -ok, -ík, -čok. The diminutive becomes part of the stem, then the stem is declined: stromčeka (gen), stromčeku (loc)." },
+
+  // ── je mi dobre ───────────────────────────────────────────────────────────
+  { id:"jm1", tag:"je mi dobre — dative of experience",
+    sentence:"Je ___ zle.",
+    answer:"mu", distractors:["ho","on","jeho"],
+    full:"Je <b class='ans'>mu</b> zle.", translation:"He feels unwell.",
+    rule:"<b>je [dative] [state] = impersonal construction.</b> The experiencer takes dative: mi (I), ti (you), mu (he), jej (she), nám (we). The state is impersonal — no explicit subject.",
+    notes:"Full set: je mi/ti/mu/jej/nám/vám/im + dobre/zle/teplo/zima/smutno/ľúto/všetko jedno. Slovak kept the old dative-of-experience construction that English mostly abandoned." },
+
+  { id:"jm2", tag:"je mi dobre — dative of experience",
+    sentence:"Je ti ___?",
+    answer:"dobre", distractors:["dobrý","dobrá","dobré"],
+    full:"Je ti <b class='ans'>dobre</b>?", translation:"Are you feeling okay?",
+    rule:"<b>The state word is an adverb (dobre, zle, teplo, zima, smutno)</b> — not an adjective. Adjectives need nouns; adverbs describe the impersonal state directly.",
+    notes:"Compare: si dobrý? (are you a good person? — adjective) vs je ti dobre? (do you feel well? — impersonal + adverb). Very different questions." },
+
+  // ── Imperative ────────────────────────────────────────────────────────────
+  { id:"imp1", tag:"Imperative: daj vs dajte",
+    sentence:"___ mi to.",
+    answer:"Daj", distractors:["Dajte","Dával","Dávaj"],
+    full:"<b class='ans'>Daj</b> mi to.", translation:"Give it to me. (one person, informal)",
+    rule:"<b>daj = imperative singular (addressing one person, informal).</b> Dajte = addressing multiple people or one person formally. The imperative tracks who is commanded, not who receives.",
+    notes:"The dative pronoun (mi, nám, ti) is independent of the imperative form. Any combination works: daj mi, daj nám, dajte mi, dajte nám." },
+
+  // ── zastaviť vs prestať ───────────────────────────────────────────────────
+  { id:"zas1", tag:"zastaviť vs prestať",
+    sentence:"Prestaň ___!",
+    answer:"hovoriť", distractors:["hovorí","hovorím","hovoríš"],
+    full:"Prestaň <b class='ans'>hovoriť</b>!", translation:"Stop talking!",
+    rule:"<b>prestať + infinitive = to stop doing an activity.</b> Infinitive required after prestať — conjugated forms are not possible here.",
+    notes:"zastaviť = to stop moving/halt (the car stopped — physical stopping). prestať = to discontinue an activity (stop talking, stop smoking). They are not interchangeable." },
+
+  { id:"zas2", tag:"zastaviť vs prestať",
+    sentence:"Auto ___ pred domom.",
+    answer:"zastavilo", distractors:["prestalo","prišlo","odišlo"],
+    full:"Auto <b class='ans'>zastavilo</b> pred domom.", translation:"The car stopped in front of the house.",
+    rule:"<b>zastaviť = to come to a halt (physical stopping).</b> Comes from stáť (to stand) + za- prefix. The car stands itself into a stopped state.",
+    notes:"Compare prestalo (it stopped doing something — activity cessation) vs zastavilo (it halted — physical stop). prestalo by need a following infinitive: prestalo fungovať (stopped working)." },
+
+  // ── mal by si sa ──────────────────────────────────────────────────────────
+  { id:"mbs1", tag:"mal by si sa — you should + reflexive",
+    sentence:"Mala by si ___ hanbiť.",
+    answer:"sa", distractors:["si","mu","sa sa"],
+    full:"Mala by si <b class='ans'>sa</b> hanbiť.", translation:"You should be ashamed of yourself. (feminine)",
+    rule:"<b>mala by si sa + reflexive verb.</b> The sa belongs to hanbiť sa but migrates to second position in the clause. It looks floating but is the reflexive particle of the verb.",
+    notes:"Pattern: mal by si sa (masculine), mala by si sa (feminine), mali by ste sa (formal/plural). By is always present as the conditional particle." },
+
+  // ── správať sa k ─────────────────────────────────────────────────────────
+  { id:"spr1", tag:"správať sa k — to treat / behave toward",
+    sentence:"Správa sa k nám ___.",
+    answer:"dobre", distractors:["dobrý","dobrá","dobré"],
+    full:"Správa sa k nám <b class='ans'>dobre</b>.", translation:"He/she treats us well.",
+    rule:"<b>správať sa k + dative</b> = to behave toward / treat someone. k provides 'toward' direction. The manner (well/badly) takes an adverb, not an adjective.",
+    notes:"k nám = toward us (dative pl of my). k becomes ku before mn: ku mne (not k mne). Without k it would just be 'he behaves' with no object." },
+
+  // ── reported speech ───────────────────────────────────────────────────────
+  { id:"rep1", tag:"Reported speech with že",
+    sentence:"Povedala mi, ___ je to len kamarátstvo.",
+    answer:"že", distractors:["keď","kedy","ako"],
+    full:"Povedala mi, <b class='ans'>že</b> je to len kamarátstvo.", translation:"She told me that it's just friendship.",
+    rule:"<b>Reported speech requires že</b> to introduce each clause. Every reported element gets its own že. Simply listing nouns without že does not work.",
+    notes:"Slovak does not shift tenses in reported speech the way English sometimes does. The tense in the že-clause reflects what was actually true at the time." },
+
+  // ── stihnúť ───────────────────────────────────────────────────────────────
+  { id:"sti1", tag:"stihnúť — to get done in time",
+    sentence:"Nestíham behať.",
+    answer:"I'm not managing to fit in running", distractors:["I never run","I stopped running","I won't run"],
+    full:"Nestíham behať.", translation:"I'm not managing to fit in running / I can't keep up with my running.",
+    rule:"<b>nestíham = I can't keep up / I'm not managing / I'm swamped.</b> It fills a gap English handles clumsily with many phrases. stihnúť = to get something done in time.",
+    notes:"In one word: 'I can't keep up', 'I'm running out of time', 'I've got too much on' — all = nestíham. One of the most common words in natural Slovak conversation." },
+
+  // ── ako nikdy ─────────────────────────────────────────────────────────────
+  { id:"ank1", tag:"ako nikdy — more than ever",
+    sentence:"Som unavený ako ___.",
+    answer:"nikdy", distractors:["vždy","niekedy","kedykoľvek"],
+    full:"Som unavený ako <b class='ans'>nikdy</b>.", translation:"I'm more tired than ever.",
+    rule:"<b>ako nikdy</b> = 'as never / as never before' — the current state exceeds all previous instances. Any adjective/adverb can fill the slot before ako nikdy.",
+    notes:"Template: [adjective] ako nikdy. Extensions: ako nikdy predtým (as never before), ako nikdy v živote (as never in my life). Contrast: ako vždy (as always — recurring pattern, not a record)." },
+
+  // ── dosť ──────────────────────────────────────────────────────────────────
+  { id:"dos1", tag:"dosť — always 'enough'",
+    sentence:"Dosť ___ problémov.",
+    answer:"veľa", distractors:["veľký","veľká","veľké"],
+    full:"Dosť <b class='ans'>veľa</b> problémov.", translation:"Quite a lot of problems.",
+    rule:"<b>dosť = enough (always and only).</b> English translates it as 'quite/fairly' when it modifies an adjective only because 'enough good' is awkward in English. The Slovak concept is always neutral sufficiency.",
+    notes:"dosť dobrý = good enough / quite good. dosť peňazí = enough money (works directly in English). Slovak dosť has no ambiguity — unlike English 'quite' (British understatement vs intensifier)." },
+
+  // ── zoznámiť sa vs zoznámiť ───────────────────────────────────────────────
+  { id:"zoz1", tag:"zoznámiť sa vs zoznámiť",
+    sentence:"Zoznám ___ s BB.",
+    answer:"ťa", distractors:["sa ťa","si ťa","sa"],
+    full:"Zoznám <b class='ans'>ťa</b> s BB.", translation:"I'll introduce you to BB.",
+    rule:"<b>When introducing others, sa disappears.</b> The direct object ťa (you) replaces the reflexive sa. Zoznámiť niekoho s niekým = transitive: to introduce someone to someone.",
+    notes:"zoznámiť sa = reciprocal (we got to know each other). zoznámiť ťa s ňou = direct object present → sa gone. Same pattern: obliecť sa (get dressed yourself) vs obliecť niekoho (dress someone else)." }
+
+]; // end QS
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────────────────────────────────────────
+const KEY = "sk_drill_v1";
+
+function load() {
+  try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : fresh(); }
+  catch { return fresh(); }
+}
+function fresh() { return { scores: {}, answered: 0, correct: 0 }; }
+function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
+function score(s, id) { return s.scores[id] ?? 0; }
+function updateScore(s, id, ok) {
+  const c = score(s, id);
+  s.scores[id] = ok ? Math.min(5, c + 1) : Math.max(0, c - 2);
+  s.answered = (s.answered || 0) + 1;
+  if (ok) s.correct = (s.correct || 0) + 1;
+  save(s);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUESTION SELECTION  (weighted random, avoids recent)
+// ─────────────────────────────────────────────────────────────────────────────
+function weight(sc) { return [10, 7, 4, 2, 1, 0.5][Math.min(sc, 5)]; }
+
+function pick(state, recent) {
+  const pool = QS.filter(q => !recent.includes(q.id));
+  const arr = pool.length ? pool : QS;
+  const total = arr.reduce((s, q) => s + weight(score(state, q.id)), 0);
+  let r = Math.random() * total;
+  for (const q of arr) { r -= weight(score(state, q.id)); if (r <= 0) return q; }
+  return arr[arr.length - 1];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// APP STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let APP = load();
+let SES = { done: 0, ok: 0, streak: 0, recent: [] };
+let CUR = null;
+let MODE = "mc"; // "mc" | "type"
+let DONE = false;
+const SES_LEN = 10;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SCREENS
+// ─────────────────────────────────────────────────────────────────────────────
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function showHome() { refreshHome(); show("home"); }
+
+function refreshHome() {
+  const tot = APP.answered || 0;
+  const ok  = APP.correct  || 0;
+  const mas = QS.filter(q => score(APP, q.id) >= 4).length;
+  document.getElementById("s-done").textContent = tot;
+  document.getElementById("s-acc").textContent  = tot ? Math.round(ok / tot * 100) + "%" : "—";
+  document.getElementById("s-mastered").textContent = mas;
+
+  const weakItems = QS
+    .filter(q => APP.scores[q.id] !== undefined && score(APP, q.id) <= 1)
+    .sort((a, b) => score(APP, a.id) - score(APP, b.id))
+    .slice(0, 5);
+
+  const sec = document.getElementById("weak-sec");
+  if (weakItems.length) {
+    sec.style.display = "";
+    document.getElementById("weak-list").innerHTML = weakItems.map(q => {
+      const sc = score(APP, q.id);
+      const dots = [0,1,2,3,4].map(i =>
+        `<div class="dot ${i < sc ? 'on' : (sc === 0 ? 'bad' : '')}"></div>`).join("");
+      return `<div class="weak-row"><div class="topic">${q.tag}</div><div class="dots">${dots}</div></div>`;
+    }).join("");
+  } else { sec.style.display = "none"; }
+}
+
+function resetProg() {
+  localStorage.removeItem(KEY);
+  APP = fresh();
+  refreshHome();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SESSION
+// ─────────────────────────────────────────────────────────────────────────────
+function startSession() {
+  SES = { done: 0, ok: 0, streak: 0, recent: [] };
+  show("quiz");
+  nextQ();
+}
+
+function endSession() { SES.done > 0 ? showSummary() : showHome(); }
+
+function nextQ() {
+  DONE = false;
+  document.getElementById("next-btn").style.display = "none";
+  document.getElementById("fb-area").innerHTML = "";
+
+  if (SES.done >= SES_LEN) { showSummary(); return; }
+
+  CUR = pick(APP, SES.recent);
+  SES.recent.push(CUR.id);
+  if (SES.recent.length > 8) SES.recent.shift();
+
+  renderQ();
+  updateProgress();
+}
+
+function updateProgress() {
+  document.getElementById("prog-fill").style.width = (SES.done / SES_LEN * 100) + "%";
+  document.getElementById("q-count").textContent = `${SES.done}/${SES_LEN}`;
+  document.getElementById("streak-el").innerHTML =
+    SES.streak >= 3 ? `<span class="streak">🔥 ${SES.streak}</span>` : "";
+}
+
+function renderQ() {
+  document.getElementById("q-tag").textContent = CUR.tag;
+  document.getElementById("q-sent").innerHTML =
+    CUR.sentence.replace("___", "<span class='blank'>___</span>");
+  document.getElementById("q-trans").textContent = CUR.translation;
+
+  const mc = document.getElementById("mc-opts");
+  const tr = document.getElementById("type-row");
+  document.getElementById("mode-lbl").textContent = MODE === "mc" ? "typed input" : "multiple choice";
+
+  if (MODE === "mc") {
+    mc.style.display = ""; tr.style.display = "none";
+    const opts = shuffle([CUR.answer, ...CUR.distractors.slice(0, 3)]);
+    mc.innerHTML = opts.map((o, i) => `
+      <button class="opt" onclick="checkMC(${JSON.stringify(o)}, this)">
+        <div class="opt-lbl">${"ABCD"[i]}</div><div>${o}</div>
+      </button>`).join("");
+  } else {
+    mc.style.display = "none"; tr.style.display = "";
+    const inp = document.getElementById("type-in");
+    inp.value = ""; inp.disabled = false;
+    inp.className = "type-in";
+    setTimeout(() => inp.focus(), 80);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANSWER CHECKING
+// ─────────────────────────────────────────────────────────────────────────────
+function checkMC(chosen, btn) {
+  if (DONE) return;
+  DONE = true;
+  const ok = chosen === CUR.answer;
+  handleAnswer(ok);
+  document.querySelectorAll(".opt").forEach(b => {
+    b.disabled = true;
+    const txt = b.querySelector("div:last-child").textContent;
+    if (txt === CUR.answer) b.classList.add("ok");
+    else if (b === btn && !ok) b.classList.add("err");
+  });
+}
+
+function checkTyped() {
+  if (DONE) return;
+  const inp = document.getElementById("type-in");
+  const val = inp.value.trim();
+  if (!val) return;
+  DONE = true;
+  const ok = val.toLowerCase() === CUR.answer.toLowerCase();
+  inp.disabled = true;
+  inp.classList.add(ok ? "ok" : "err");
+  handleAnswer(ok);
+}
+
+function handleAnswer(ok) {
+  updateScore(APP, CUR.id, ok);
+  SES.done++;
+  if (ok) { SES.ok++; SES.streak++; } else { SES.streak = 0; }
+  showFeedback(ok);
+  updateProgress();
+  const nb = document.getElementById("next-btn");
+  nb.textContent = SES.done >= SES_LEN ? "See Results →" : "Continue →";
+  nb.style.display = "block";
+}
+
+function showFeedback(ok) {
+  const q = CUR;
+  const cls = ok ? "ok" : "err";
+  const icon = ok ? "✓ Correct!" : `✗ The answer was <strong>${q.answer}</strong>`;
+  document.getElementById("fb-area").innerHTML = `
+    <div class="fb ${cls}">
+      <div class="fb-result ${cls}">${icon}</div>
+      <div class="fb-sent">${q.full}</div>
+      <div class="fb-rule">${q.rule}</div>
+      ${q.notes ? `<div class="fb-notes">${q.notes}</div>` : ""}
+    </div>`;
+  document.getElementById("fb-area").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODE TOGGLE
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleMode() {
+  MODE = MODE === "mc" ? "type" : "mc";
+  if (CUR && !DONE) renderQ();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUMMARY
+// ─────────────────────────────────────────────────────────────────────────────
+function showSummary() {
+  const pct = SES.done ? Math.round(SES.ok / SES.done * 100) : 0;
+  document.getElementById("sum-pct").textContent = pct + "%";
+  document.getElementById("sum-frac").textContent = `${SES.ok} of ${SES.done} correct`;
+  const msg = pct >= 80 ? "Strong session — keep the momentum." :
+              pct >= 60 ? "Good work. The tricky ones are queued for more practice." :
+                          "Rough session — but that's what the drill is for. Those questions come back.";
+  const mas = QS.filter(q => score(APP, q.id) >= 4).length;
+  document.getElementById("sum-detail").innerHTML = `
+    <p class="sum-msg">${msg}</p>
+    <div class="sgrid">
+      <div class="scard"><div class="val">${APP.answered}</div><div class="lbl">Total</div></div>
+      <div class="scard"><div class="val">${mas}</div><div class="lbl">Mastered</div></div>
+      <div class="scard"><div class="val">${QS.length}</div><div class="lbl">Pool</div></div>
+    </div>`;
+  show("summary");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────────────────────────────────────
+function shuffle(a) {
+  const b = [...a];
+  for (let i = b.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [b[i], b[j]] = [b[j], b[i]];
+  }
+  return b;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+showHome();
+</script>
+</body>
+</html>
