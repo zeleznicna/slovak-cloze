@@ -177,10 +177,7 @@ body {
     <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
 
     <div class="mode-row">
-<<<<<<< HEAD
       <button class="mode-btn" id="trans-tog" onclick="toggleTrans()">Hide translation</button>
-=======
->>>>>>> 05d11389464a674ba0ee1f7e4cd87775e54626ff
       <button class="mode-btn" onclick="toggleMode()">Switch to <span id="mode-lbl">typed input</span></button>
     </div>
 
@@ -328,15 +325,9 @@ const QS = [
     notes:"ani is the negative pole of the aj/ani pair: ani jeden (not a single one), ani raz (not once), ani trochu (not even a little), ani neviem (I don't even know)." },
 
   { id:"dbl2", tag:"Double negative",
-<<<<<<< HEAD
     sentence:"Čakali sme hodinu pri vchode, ale nikto ___.",
     answer:"neprišiel", distractors:["prišiel","príde","prichádza"],
     full:"Čakali sme hodinu pri vchode, ale nikto <b class='ans'>neprišiel</b>.", translation:"We waited an hour at the entrance, but nobody came.",
-=======
-    sentence:"Nikto ___ prišiel.",
-    answer:"neprišiel", distractors:["prišiel","príde","prichádza"],
-    full:"Nikto <b class='ans'>neprišiel</b>.", translation:"Nobody came.",
->>>>>>> 05d11389464a674ba0ee1f7e4cd87775e54626ff
     rule:"<b>Double negative is obligatory in Slovak.</b> When a negative word (nikto, nič, nikdy, žiadny, ani) is present, the verb must also be negated. 'Nikto prišiel' is ungrammatical.",
     notes:"Rule: if there's a negative word in the sentence, the verb must also carry ne-. This applies to: nikto, nič, nikdy, nikde, žiadny, ani — always." },
 
@@ -715,10 +706,7 @@ let SES = { done: 0, ok: 0, streak: 0, recent: [] };
 let CUR = null;
 let MODE = "mc"; // "mc" | "type"
 let DONE = false;
-<<<<<<< HEAD
 let HIDE_TRANS = false;
-=======
->>>>>>> 05d11389464a674ba0ee1f7e4cd87775e54626ff
 const SES_LEN = 10;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -799,14 +787,10 @@ function renderQ() {
   document.getElementById("q-tag").textContent = CUR.tag;
   document.getElementById("q-sent").innerHTML =
     CUR.sentence.replace("___", "<span class='blank'>___</span>");
-<<<<<<< HEAD
   const transEl = document.getElementById("q-trans");
   transEl.textContent = CUR.translation;
   transEl.style.display = HIDE_TRANS ? "none" : "";
   document.getElementById("trans-tog").textContent = HIDE_TRANS ? "Show translation" : "Hide translation";
-=======
-  document.getElementById("q-trans").textContent = CUR.translation;
->>>>>>> 05d11389464a674ba0ee1f7e4cd87775e54626ff
 
   const mc = document.getElementById("mc-opts");
   const tr = document.getElementById("type-row");
@@ -815,14 +799,9 @@ function renderQ() {
   if (MODE === "mc") {
     mc.style.display = ""; tr.style.display = "none";
     const opts = shuffle([CUR.answer, ...CUR.distractors.slice(0, 3)]);
-<<<<<<< HEAD
     const esc = s => s.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     mc.innerHTML = opts.map((o, i) => `
       <button class="opt" data-val="${esc(o)}" onclick="checkMC(this.dataset.val, this)">
-=======
-    mc.innerHTML = opts.map((o, i) => `
-      <button class="opt" onclick="checkMC(${JSON.stringify(o)}, this)">
->>>>>>> 05d11389464a674ba0ee1f7e4cd87775e54626ff
         <div class="opt-lbl">${"ABCD"[i]}</div><div>${o}</div>
       </button>`).join("");
   } else {
@@ -895,7 +874,6 @@ function toggleMode() {
   if (CUR && !DONE) renderQ();
 }
 
-<<<<<<< HEAD
 function toggleTrans() {
   HIDE_TRANS = !HIDE_TRANS;
   const transEl = document.getElementById("q-trans");
@@ -903,8 +881,7 @@ function toggleTrans() {
   document.getElementById("trans-tog").textContent = HIDE_TRANS ? "Show translation" : "Hide translation";
 }
 
-=======
->>>>>>> 05d11389464a674ba0ee1f7e4cd87775e54626ff
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SUMMARY
 // ─────────────────────────────────────────────────────────────────────────────
