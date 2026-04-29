@@ -141,6 +141,11 @@ body {
 .sum-pct { font-size: 60px; font-weight: 800; color: var(--accent); line-height: 1; }
 .sum-frac { font-size: 16px; color: var(--muted); margin-top: 3px; }
 .sum-msg { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+
+/* ── Set sections ── */
+.set-hdr { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin: 16px 0 8px; }
+.btn-vocab { background: var(--ok); }
 </style>
 </head>
 <body>
@@ -149,11 +154,7 @@ body {
   <!-- ═══ HOME ═══ -->
   <div id="home" class="screen">
     <div class="hdr"><h1>Slovak Drill</h1><span style="font-size:26px">🇸🇰</span></div>
-    <div class="hero">
-      <div class="flag">🇸🇰</div>
-      <h2>Grammar Practice</h2>
-      <p>Fill-in-the-blank sentences from your study conversation.<br>Weak points surface more often.</p>
-    </div>
+    <div class="set-hdr">Grammar Drill</div>
     <div class="sgrid">
       <div class="scard"><div class="val" id="s-done">0</div><div class="lbl">Answered</div></div>
       <div class="scard"><div class="val" id="s-acc">—</div><div class="lbl">Accuracy</div></div>
@@ -163,7 +164,16 @@ body {
       <div class="weak-hdr">Needs Work</div>
       <div id="weak-list"></div>
     </div>
-    <button class="btn btn-p" onclick="startSession()">Start Session  (10 questions)</button>
+    <button class="btn btn-p" onclick="startSession('grammar')">Grammar Drill (10 questions)</button>
+
+    <div class="set-hdr">Vocabulary Practice</div>
+    <div class="sgrid">
+      <div class="scard"><div class="val" id="v-done">0</div><div class="lbl">Answered</div></div>
+      <div class="scard"><div class="val" id="v-acc">—</div><div class="lbl">Accuracy</div></div>
+      <div class="scard"><div class="val" id="v-mastered">0</div><div class="lbl">Mastered</div></div>
+    </div>
+    <button class="btn btn-p btn-vocab" onclick="startSession('vocab')">Vocabulary Practice (10 questions)</button>
+
     <button class="btn btn-s" onclick="if(confirm('Reset all progress?')){resetProg();}">Reset Progress</button>
   </div>
 
@@ -665,16 +675,436 @@ const QS = [
 ]; // end QS
 
 // ─────────────────────────────────────────────────────────────────────────────
+// VOCABULARY QUESTION SET
+// ─────────────────────────────────────────────────────────────────────────────
+const VQS = [
+
+  // ── zrazu / hneď / okamžite ───────────────────────────────────────────────
+  { id:"v_zrazu1", tag:"zrazu vs hneď vs okamžite",
+    sentence:"Šla pokojne ulicou a ___ sa zastavila pri výklade.",
+    answer:"zrazu", distractors:["hneď","okamžite","náhle"],
+    full:"Šla pokojne ulicou a <b class='ans'>zrazu</b> sa zastavila pri výklade.", translation:"She walked calmly along the street and suddenly stopped at the shop window.",
+    rule:"<b>zrazu</b> = suddenly (unexpected event). <b>hneď</b> = right away (no delay). <b>okamžite</b> = at that exact instant. <b>náhle</b> = abruptly (more formal/literary).",
+    notes:"zrazu implies surprise — something unexpected happened. hneď focuses on speed/no delay. okamžite is strongest for 'at that very instant'." },
+
+  { id:"v_hned1", tag:"zrazu vs hneď vs okamžite",
+    sentence:"Zavolal mi a ___ prišiel — nestratil ani minútu.",
+    answer:"hneď", distractors:["zrazu","okamžite","neskoro"],
+    full:"Zavolal mi a <b class='ans'>hneď</b> prišiel — nestratil ani minútu.", translation:"He called me and came right away — didn't waste a minute.",
+    rule:"<b>hneď</b> = right away / straight away — focuses on the absence of delay, not the element of surprise.",
+    notes:"hneď odpoviem = I'll answer right away. hneď after a verb = as soon as possible. Compare: zrazu = something unexpected; hneď = quickly/without waiting." },
+
+  { id:"v_okamzite1", tag:"zrazu vs hneď vs okamžite",
+    sentence:"Vedel som to ___ — ani sekundu som nepochyboval.",
+    answer:"okamžite", distractors:["hneď","zrazu","nakoniec"],
+    full:"Vedel som to <b class='ans'>okamžite</b> — ani sekundu som nepochyboval.", translation:"I knew it immediately — I didn't doubt for a second.",
+    rule:"<b>okamžite</b> = at that very instant. Strongest of the three — emphasises the precise moment rather than the absence of delay.",
+    notes:"From okamih = an instant. okamžite = at that very moment. Use when stressing the instantaneous quality: okamžite reagoval = he reacted at that very instant." },
+
+  // ── poraniť sa vs zraniť sa ───────────────────────────────────────────────
+  { id:"v_poranit1", tag:"poraniť sa vs zraniť sa",
+    sentence:"Padol som na ľade, ale ___ som sa len trochu — nič vážne.",
+    answer:"poranil", distractors:["zranil","ublížil","zabolel"],
+    full:"Padol som na ľade, ale <b class='ans'>poranil</b> som sa len trochu — nič vážne.", translation:"I fell on the ice but only hurt myself slightly — nothing serious.",
+    rule:"<b>poraniť sa</b> = minor injury (scraped, bumped, superficial). <b>zraniť sa</b> = serious injury (requires medical attention).",
+    notes:"po- prefix: something minor that happened. zraniť sa is heavier — you go to the doctor. poranil som si koleno = scraped my knee; zranil som sa = I was hurt (seriously)." },
+
+  { id:"v_zranit1", tag:"poraniť sa vs zraniť sa",
+    sentence:"Musel ísť na pohotovosť, lebo sa vážne ___.",
+    answer:"zranil", distractors:["poranil","unavil","stratil"],
+    full:"Musel ísť na pohotovosť, lebo sa vážne <b class='ans'>zranil</b>.", translation:"He had to go to A&E because he was seriously injured.",
+    rule:"<b>zraniť sa</b> = seriously injured. The word 'vážne' (seriously) confirms this is zraniť territory. pohotovosť = A&E / emergency room.",
+    notes:"poranil vs zranil — same root, different prefix changes severity. zranený = wounded/injured (adjective). zranenie = injury (noun)." },
+
+  // ── zdvihnúť vs vyzdvihnúť ────────────────────────────────────────────────
+  { id:"v_vydvihn1", tag:"zdvihnúť vs vyzdvihnúť",
+    sentence:"Zdvihol som telefón, ale ___ balík z pošty som zabudol.",
+    answer:"vyzdvihnúť", distractors:["zdvihnúť","zobrať","doniesť"],
+    full:"Zdvihol som telefón, ale <b class='ans'>vyzdvihnúť</b> balík z pošty som zabudol.", translation:"I picked up the phone but forgot to collect the parcel from the post office.",
+    rule:"<b>zdvihnúť</b> = to lift / pick up (raise physically — e.g. a call). <b>vyzdvihnúť</b> = to collect / pick up something waiting for you.",
+    notes:"vy- prefix suggests going out to get something. zdvihnúť telefón = answer the phone. vyzdvihnúť dieťa zo školy = collect a child from school. vyzdvihnúť balík = pick up a parcel." },
+
+  // ── počúvať / počuť / začuť / čuť ────────────────────────────────────────
+  { id:"v_pocuvat1", tag:"počúvať / počuť / začuť / čuť",
+    sentence:"Každý deň ___ hudbu aspoň hodinu.",
+    answer:"počúvam", distractors:["čujem","začujem","počujem"],
+    full:"Každý deň <b class='ans'>počúvam</b> hudbu aspoň hodinu.", translation:"Every day I listen to music for at least an hour.",
+    rule:"<b>počúvať</b> = to listen (active, habitual). <b>čuť</b> = to be able to hear (capacity/state). <b>počuť</b> = to hear (one completed instance). <b>začuť</b> = to suddenly catch a sound.",
+    notes:"počúvam hudbu = I'm listening (active). čujem ťa = I can hear you (capacity). počul som ho = I heard him (once). začul som krok = I caught a footstep (unexpected)." },
+
+  { id:"v_zacuct1", tag:"počúvať / počuť / začuť / čuť",
+    sentence:"Uprostred noci som ___ zvuk, ktorý som nepoznal.",
+    answer:"začul", distractors:["počul","počúval","čul"],
+    full:"Uprostred noci som <b class='ans'>začul</b> zvuk, ktorý som nepoznal.", translation:"In the middle of the night I caught a sound I didn't recognise.",
+    rule:"<b>začuť</b> = to suddenly catch a sound breaking through — unexpected noticing.",
+    notes:"začuť implies the sound arrives unexpectedly: začul som kroky = I caught the sound of footsteps. počuť = registered hearing once: počul som ho prísť = I heard him arrive." },
+
+  // ── nudiť sa / nudný ──────────────────────────────────────────────────────
+  { id:"v_nuditsa1", tag:"nudiť sa vs nudný",
+    sentence:"Počas prednášky som sa ___.",
+    answer:"nudil", distractors:["unavil","bál","hanbil"],
+    full:"Počas prednášky som sa <b class='ans'>nudil</b>.", translation:"I was bored during the lecture.",
+    rule:"<b>nudiť sa</b> = to be bored (the person experiences boredom). <b>nudný</b> = boring (the thing causing boredom).",
+    notes:"nudím sa = I am bored (verb). nudný text = a boring text (adjective). nudiť niekoho = to bore someone else." },
+
+  { id:"v_nudny1", tag:"nudiť sa vs nudný",
+    sentence:"Text bol taký ___, že som ho nedočítal.",
+    answer:"nudný", distractors:["ťažký","dlhý","cudzí"],
+    full:"Text bol taký <b class='ans'>nudný</b>, že som ho nedočítal.", translation:"The text was so boring that I didn't finish reading it.",
+    rule:"<b>nudný</b> = boring (adjective — describes the thing causing boredom). You nudiť sa because the text is nudný.",
+    notes:"nudný film, nudná kniha, nudné stretnutie — agrees with the noun it describes. nudný ≠ nudím sa." },
+
+  // ── hanbiť sa ─────────────────────────────────────────────────────────────
+  { id:"v_hanbit1", tag:"hanbiť sa — to be ashamed",
+    sentence:"Červenal som sa a vedel som, že sa ___.",
+    answer:"hanbím", distractors:["bojím","nudím","ľutujem"],
+    full:"Červenal som sa a vedel som, že sa <b class='ans'>hanbím</b>.", translation:"I was going red and I knew that I was ashamed.",
+    rule:"<b>hanbiť sa za niečo</b> = ashamed OF something. <b>hanbiť sa pred niekým</b> = embarrassed IN FRONT OF someone. Two prepositions, two situations.",
+    notes:"hanbiť sa za chybu = ashamed of the mistake. hanbiť sa pred triedou = embarrassed in front of the class. Both are natural; the preposition tells you the type of shame." },
+
+  // ── záväzok ───────────────────────────────────────────────────────────────
+  { id:"v_zavazok1", tag:"záväzok vs sľub",
+    sentence:"___ nie je o slovách — je o tom, čo robíš, keď je to ťažké.",
+    answer:"Záväzok", distractors:["Sľub","Záujem","Cieľ"],
+    full:"<b class='ans'>Záväzok</b> nie je o slovách — je o tom, čo robíš, keď je to ťažké.", translation:"A commitment is not about words — it's about what you do when it's difficult.",
+    rule:"<b>záväzok</b> = binding commitment / obligation (from zaviazať = to bind). Stronger than sľub, which is just a verbal promise.",
+    notes:"záväzný = binding (adjective). sľub = a promise (words only). záväzok implies you are bound to something — obligation, not just intention." },
+
+  // ── osamelosť vs samota ───────────────────────────────────────────────────
+  { id:"v_osamelost1", tag:"osamelosť vs samota",
+    sentence:"___ nie je o tom, že si sám — je o tom, že ťa nikto nerozumie.",
+    answer:"Osamelosť", distractors:["Samota","Smútok","Ticho"],
+    full:"<b class='ans'>Osamelosť</b> nie je o tom, že si sám — je o tom, že ťa nikto nerozumie.", translation:"Loneliness is not about being alone — it's about nobody understanding you.",
+    rule:"<b>osamelosť</b> = loneliness (emotional isolation, painful). <b>samota</b> = solitude (physical aloneness — can be positive, sought out).",
+    notes:"byť sám / samota = physically alone (can be desired). osamelosť = emotional isolation even when surrounded by people. Kto je sám nie je vždy osamelý." },
+
+  // ── očakávanie vs sklamanie ───────────────────────────────────────────────
+  { id:"v_ocakavanie1", tag:"očakávanie vs sklamanie",
+    sentence:"___ je niekedy ťažšie ako samotný výsledok.",
+    answer:"Očakávanie", distractors:["Sklamanie","Rozhodnutie","Výsledok"],
+    full:"<b class='ans'>Očakávanie</b> je niekedy ťažšie ako samotný výsledok.", translation:"Expectation is sometimes harder than the actual result.",
+    rule:"<b>očakávanie</b> = expectation / anticipation (before the event). <b>sklamanie</b> = disappointment (after the event).",
+    notes:"očakávať = to expect. nečakaný = unexpected. sklamať = to disappoint. sklamaný = disappointed. The timing is everything: očakávanie before, sklamanie after." },
+
+  // ── spomienka ─────────────────────────────────────────────────────────────
+  { id:"v_spomienka1", tag:"spomienka — memory/recollection",
+    sentence:"___ na ten deň sa vracia v najneočakávanejších momentoch.",
+    answer:"Spomienka", distractors:["Pocit","Myšlienka","Zážitok"],
+    full:"<b class='ans'>Spomienka</b> na ten deň sa vracia v najneočakávanejších momentoch.", translation:"The memory of that day returns in the most unexpected moments.",
+    rule:"<b>spomienka</b> = a memory / recollection (specific remembered moment). From spomínať si = to recall.",
+    notes:"spomienka na niečo = memory OF something. spomienky (plural) = memories. Contrast: pamäť = memory as a faculty/capacity (dobrá pamäť = good memory)." },
+
+  // ── pohoda ────────────────────────────────────────────────────────────────
+  { id:"v_pohoda1", tag:"pohoda — ease/wellbeing",
+    sentence:"Po tréningu nastáva ___, ktorú nič iné nevyvolá.",
+    answer:"pohoda", distractors:["únava","bolesť","radosť"],
+    full:"Po tréningu nastáva <b class='ans'>pohoda</b>, ktorú nič iné nevyvolá.", translation:"After training comes an ease that nothing else creates.",
+    rule:"<b>pohoda</b> = relaxed ease / wellbeing (no direct English equivalent). v pohode = fine / no worries. Quintessentially Slovak.",
+    notes:"pohoda alone = all good. v pohode = relaxed, settled, unstressed. Not the same as šťastie (happiness) — pohoda is calmer and less intense." },
+
+  // ── hlboký vs plytký ──────────────────────────────────────────────────────
+  { id:"v_hlboky1", tag:"hlboký vs plytký",
+    sentence:"Chcel som ___ rozhovor, nie len small talk.",
+    answer:"hlboký", distractors:["plytký","krátky","jednoduchý"],
+    full:"Chcel som <b class='ans'>hlboký</b> rozhovor, nie len small talk.", translation:"I wanted a deep conversation, not just small talk.",
+    rule:"<b>hlboký</b> = deep (physical and figurative). <b>plytký</b> = shallow (physical and figurative). hlboký vzťah = deep relationship; plytký rozhovor = shallow conversation.",
+    notes:"Physical: hlboké jazero = deep lake, plytká voda = shallow water. Figurative: hlboká myšlienka = deep thought, plytký človek = shallow person." },
+
+  // ── silný vs slabý ────────────────────────────────────────────────────────
+  { id:"v_silny1", tag:"silný / slabý for intensity",
+    sentence:"Káva bola príliš ___ — celú noc som nespal.",
+    answer:"silná", distractors:["slabá","horúca","studená"],
+    full:"Káva bola príliš <b class='ans'>silná</b> — celú noc som nespal.", translation:"The coffee was too strong — I couldn't sleep all night.",
+    rule:"<b>silný / slabý</b> works for both people and drinks/intensity: silná káva = strong coffee, slabý čaj = weak tea — same adjective, two registers.",
+    notes:"silný muž = strong man; silná káva = strong coffee; silný vietor = strong wind. No separate word for 'strong' vs 'concentrated' — context does the work." },
+
+  // ── hrubý vs tenký ────────────────────────────────────────────────────────
+  { id:"v_hruby1", tag:"hrubý vs tenký",
+    sentence:"Múry starého hradu boli ___ a chladné.",
+    answer:"hrubé", distractors:["tenké","vysoké","pevné"],
+    full:"Múry starého hradu boli <b class='ans'>hrubé</b> a chladné.", translation:"The walls of the old castle were thick and cold.",
+    rule:"<b>hrubý</b> = thick (physical thickness of objects). <b>tenký</b> = thin. hrubý ≠ tučný — tučný is fat for people/food.",
+    notes:"hrubé múry = thick walls; tenká vrstva = thin layer. hrubý can also mean crude/rude in other contexts. Do not confuse with tučný (fat)." },
+
+  // ── studený vs zima ───────────────────────────────────────────────────────
+  { id:"v_studeny1", tag:"studený (objects) vs zima (feeling/weather)",
+    sentence:"Jej odpoveď bola ___, hoci slová zneli teplé.",
+    answer:"studená", distractors:["krátka","zlá","chladná"],
+    full:"Jej odpoveď bola <b class='ans'>studená</b>, hoci slová zneli teplé.", translation:"Her reply was cold, even though the words sounded warm.",
+    rule:"<b>studený</b> = cold (adjective — objects, surfaces, tone). <b>zima</b> = cold as a feeling or weather noun (je mi zima = I'm cold; je zima = it's cold).",
+    notes:"studený pohár = cold glass. studený pohľad = cold look (figurative). je mi zima = I feel cold. je zima = cold weather. studený is an adjective; zima is a noun." },
+
+  // ── okrem vs navyše ───────────────────────────────────────────────────────
+  { id:"v_okrem1", tag:"okrem vs navyše",
+    sentence:"___ gramatiky treba vedieť aj výslovnosť.",
+    answer:"Okrem", distractors:["Navyše","Namiesto","Vďaka"],
+    full:"<b class='ans'>Okrem</b> gramatiky treba vedieť aj výslovnosť.", translation:"Besides grammar you also need to know pronunciation.",
+    rule:"<b>okrem + genitive</b> = besides / except. Takes a noun after it. <b>navyše</b> = moreover (adverb — stands alone, no noun follows).",
+    notes:"okrem toho = besides that. okrem mňa = except me. navyše can't take a noun directly: navyše, to trvá dlho ✓ vs navyše gramatiky ✗." },
+
+  { id:"v_navyse1", tag:"okrem vs navyše",
+    sentence:"Je skúsený a ___ veľmi motivovaný.",
+    answer:"navyše", distractors:["okrem","hoci","ibaže"],
+    full:"Je skúsený a <b class='ans'>navyše</b> veľmi motivovaný.", translation:"He is experienced and moreover very motivated.",
+    rule:"<b>navyše</b> = moreover / on top of that (adverb). Adds extra weight. Unlike okrem, it doesn't need a following noun.",
+    notes:"navyše stacks additions: skúsený a navyše motivovaný = experienced and moreover motivated. okrem skúsenosti = besides (his) experience — okrem needs the noun." },
+
+  // ── ibaže ─────────────────────────────────────────────────────────────────
+  { id:"v_ibaze1", tag:"ibaže — only that / except that",
+    sentence:"Dá sa to naučiť — ___, to chce čas a trpezlivosť.",
+    answer:"ibaže", distractors:["navyše","ale","teda"],
+    full:"Dá sa to naučiť — <b class='ans'>ibaže</b>, to chce čas a trpezlivosť.", translation:"It can be learned — only that it takes time and patience.",
+    rule:"<b>ibaže</b> = only that / except that. Introduces a qualification or catch after a positive statement.",
+    notes:"Pattern: [positive claim] — ibaže [the catch/qualification]. More specific than ale. dá sa to = it can be done (impersonal)." },
+
+  // ── pokiaľ ide o ──────────────────────────────────────────────────────────
+  { id:"v_pokial1", tag:"pokiaľ ide o — as far as X is concerned",
+    sentence:"___ ide o jedlo, vždy si vyberám to zdravšie.",
+    answer:"Pokiaľ", distractors:["Čo","Keď","Ako"],
+    full:"<b class='ans'>Pokiaľ</b> ide o jedlo, vždy si vyberám to zdravšie.", translation:"As far as food is concerned, I always choose the healthier option.",
+    rule:"<b>pokiaľ ide o + accusative</b> = as far as X is concerned / regarding X. Fixed phrase.",
+    notes:"pokiaľ ide o slovenčinu = as far as Slovak is concerned. pokiaľ ide o čas = regarding time. Very useful for framing a topic in conversation." },
+
+  // ── žiadosť ───────────────────────────────────────────────────────────────
+  { id:"v_ziadost1", tag:"žiadosť — application/request",
+    sentence:"Bez dokladu totožnosti nemôžem podať ___.",
+    answer:"žiadosť", distractors:["formulár","zmluvu","potvrdenie"],
+    full:"Bez dokladu totožnosti nemôžem podať <b class='ans'>žiadosť</b>.", translation:"Without an identity document I cannot submit an application.",
+    rule:"<b>žiadosť</b> = formal application / request. <b>podať žiadosť</b> = to submit an application — the standard administrative phrase.",
+    notes:"podať žiadosť na/o + accusative = submit an application for. žiadosť o vízum = visa application. žiadať = to request (verb)." },
+
+  // ── potvrdenie ────────────────────────────────────────────────────────────
+  { id:"v_potvrdenie1", tag:"potvrdenie — confirmation",
+    sentence:"___ o registrácii mi poslali na email.",
+    answer:"Potvrdenie", distractors:["Formulár","Žiadosť","Doklad"],
+    full:"<b class='ans'>Potvrdenie</b> o registrácii mi poslali na email.", translation:"They sent me the registration confirmation by email.",
+    rule:"<b>potvrdenie</b> = confirmation / receipt. From potvrdiť = to confirm. potvrdenie o [genitive] = confirmation of X.",
+    notes:"potvrdenie o platbe = payment confirmation. potvrdiť = to confirm (verb). potvrdenie is what you receive after an action is completed." },
+
+  // ── tlačivo vs formulár ───────────────────────────────────────────────────
+  { id:"v_tlacivo1", tag:"tlačivo vs formulár",
+    sentence:"Na úrade mi dali ___, ktoré som musel vyplniť ručne.",
+    answer:"tlačivo", distractors:["formulár","žiadosť","doklad"],
+    full:"Na úrade mi dali <b class='ans'>tlačivo</b>, ktoré som musel vyplniť ručne.", translation:"At the office they gave me a form that I had to fill in by hand.",
+    rule:"<b>tlačivo</b> = official pre-printed form (government/bureaucracy — physical paper at an úrad). <b>formulár</b> = broader (online forms, non-official).",
+    notes:"tlačivo is specifically what you get at Slovak government offices. formulár covers digital and non-official forms too. Both mean 'form' but context differs." },
+
+  // ── zaviesť ───────────────────────────────────────────────────────────────
+  { id:"v_zaviest1", tag:"zaviesť — to introduce/implement",
+    sentence:"Firma ___ nový systém bez konzultácie so zamestnancami.",
+    answer:"zaviedla", distractors:["viedla","ukázala","predala"],
+    full:"Firma <b class='ans'>zaviedla</b> nový systém bez konzultácie so zamestnancami.", translation:"The company introduced a new system without consulting employees.",
+    rule:"<b>zaviesť</b> = to introduce / implement (bring something new into effect). za- + viesť = lead into place.",
+    notes:"zaviesť systém/pravidlo/zmenu = introduce a system/rule/change. viesť = to lead/manage (ongoing); zaviesť = to bring into effect (completed)." },
+
+  // ── nastúpiť vs vystúpiť ──────────────────────────────────────────────────
+  { id:"v_nastup1", tag:"nastúpiť vs vystúpiť",
+    sentence:"___ som do autobusu a sadol som si pri okne.",
+    answer:"Nastúpil", distractors:["Vystúpil","Prišiel","Odišiel"],
+    full:"<b class='ans'>Nastúpil</b> som do autobusu a sadol som si pri okne.", translation:"I boarded the bus and sat down by the window.",
+    rule:"<b>nastúpiť</b> = to board / get on (na + accusative). <b>vystúpiť</b> = to get off / alight (z + genitive).",
+    notes:"nastúpiť do autobusu/vlaku = board. vystúpiť z autobusu = get off. nastúpiť can also mean to start a job: nastúpiť do práce = start work." },
+
+  // ── vstúpiť ───────────────────────────────────────────────────────────────
+  { id:"v_vstup1", tag:"vstúpiť — to enter",
+    sentence:"Bez zaklopania ___ do miestnosti.",
+    answer:"vstúpil", distractors:["nastúpil","vystúpil","ustúpil"],
+    full:"Bez zaklopania <b class='ans'>vstúpil</b> do miestnosti.", translation:"He entered the room without knocking.",
+    rule:"<b>vstúpiť do</b> = to enter a room / space / organisation. v- + stúpiť = step into.",
+    notes:"vstúpiť do miestnosti = enter the room. vstúpiť do organizácie = join an organisation. nastúpiť = board transport; vstúpiť = enter a space or group." },
+
+  // ── prihlásiť sa vs odhlásiť sa ───────────────────────────────────────────
+  { id:"v_prihlasit1", tag:"prihlásiť sa vs odhlásiť sa",
+    sentence:"Zabudol som sa ___ z newslettera — teraz dostávam 20 emailov denne.",
+    answer:"odhlásiť", distractors:["prihlásiť","otvoriť","vymazať"],
+    full:"Zabudol som sa <b class='ans'>odhlásiť</b> z newslettera — teraz dostávam 20 emailov denne.", translation:"I forgot to unsubscribe from the newsletter — now I get 20 emails a day.",
+    rule:"<b>prihlásiť sa</b> = to register / sign up (na + acc). <b>odhlásiť sa</b> = to deregister / unsubscribe / log out (z + gen). od- reverses the action.",
+    notes:"prihlásiť sa na kurz = sign up for a course. odhlásiť sa z kurzu = withdraw. prihlásiť sa = log in (computer). odhlásiť sa = log out." },
+
+  // ── zvolať vs zavolať ─────────────────────────────────────────────────────
+  { id:"v_zvolat1", tag:"zvolať vs zavolať",
+    sentence:"Šéf ___ poradu celého tímu na piatok.",
+    answer:"zvolal", distractors:["zavolal","plánoval","odložil"],
+    full:"Šéf <b class='ans'>zvolal</b> poradu celého tímu na piatok.", translation:"The boss called a whole-team meeting for Friday.",
+    rule:"<b>zvolať</b> = to convene / call together a group. <b>zavolať</b> = to call a single person (by phone or to get their attention).",
+    notes:"zvolať stretnutie/poradu = call a meeting/assembly. zavolať niekomu = phone someone. zavolať niekoho = call out to someone. zvolať = group; zavolať = individual." },
+
+  // ── vyhlásiť vs ohlásiť ───────────────────────────────────────────────────
+  { id:"v_vyhlasit1", tag:"vyhlásiť vs ohlásiť",
+    sentence:"Premiér ___ voľby skôr, ako sa čakalo.",
+    answer:"vyhlásil", distractors:["ohlásil","povedal","oznámil"],
+    full:"Premiér <b class='ans'>vyhlásil</b> voľby skôr, ako sa čakalo.", translation:"The Prime Minister called elections earlier than expected.",
+    rule:"<b>vyhlásiť</b> = to formally declare / proclaim (high stakes: elections, war, emergency). <b>ohlásiť</b> = to announce / notify (lower stakes: arrival, change).",
+    notes:"vyhlásiť vojnu/výnimočný stav = declare war/state of emergency. ohlásiť príchod/zmenu = announce arrival/change. vy- signals formal public declaration." },
+
+  // ── spustiť vs vypustiť ───────────────────────────────────────────────────
+  { id:"v_spustit1", tag:"spustiť vs vypustiť",
+    sentence:"Firma ___ novú aplikáciu bez akéhokoľvek upozornenia.",
+    answer:"spustila", distractors:["vypustila","otvorila","predala"],
+    full:"Firma <b class='ans'>spustila</b> novú aplikáciu bez akéhokoľvek upozornenia.", translation:"The company launched the new app without any notice.",
+    rule:"<b>spustiť</b> = to launch / start / trigger (system, program, campaign). <b>vypustiť</b> = to release / drop / omit.",
+    notes:"spustiť program/kampaň = launch. vypustiť zvuk/správu = emit/release. vypustiť slovo = omit a word. spustiť = set something running; vypustiť = let something out." },
+
+  // ── uložiť vs zložiť ─────────────────────────────────────────────────────
+  { id:"v_ulozit1", tag:"uložiť vs zložiť",
+    sentence:"Všetky dokumenty som ___ do jedného priečinka.",
+    answer:"uložil", distractors:["zložil","pridal","vymazal"],
+    full:"Všetky dokumenty som <b class='ans'>uložil</b> do jedného priečinka.", translation:"I saved all the documents into one folder.",
+    rule:"<b>uložiť</b> = to save / store / put away (file, money, object). <b>zložiť</b> = to fold / compose / put together.",
+    notes:"uložiť súbor = save a file. uložiť peniaze = put money away. zložiť notebook = fold the laptop shut. zložiť pieseň = compose a song." },
+
+  // ── pristihnúť sa ─────────────────────────────────────────────────────────
+  { id:"v_pristihn1", tag:"pristihnúť sa — catch yourself",
+    sentence:"___ som sa pri tom, že kontrolujem telefón každú chvíľu.",
+    answer:"Pristihol", distractors:["Chytil","Zastavil","Všimol"],
+    full:"<b class='ans'>Pristihol</b> som sa pri tom, že kontrolujem telefón každú chvíľu.", translation:"I caught myself checking my phone every few minutes.",
+    rule:"<b>pristihnúť sa pri niečom</b> = to catch yourself in the act (pri + locative). A moment of deliberate self-awareness.",
+    notes:"Compare: chytiť sa na niečom = catch yourself at something (more accidental). Both take pri + locative. pristihnúť sa is more specific and self-critical." },
+
+  // ── opraviť ───────────────────────────────────────────────────────────────
+  { id:"v_opravit1", tag:"opraviť — to fix/correct",
+    sentence:"Chybu v dokumente som ___ za dve minúty.",
+    answer:"opravil", distractors:["opravoval","napísal","našiel"],
+    full:"Chybu v dokumente som <b class='ans'>opravil</b> za dve minúty.", translation:"I corrected the error in the document in two minutes.",
+    rule:"<b>opraviť</b> = to correct / fix (perfective — single completed action). <b>opravovať</b> = ongoing correcting.",
+    notes:"opraviť chybu = correct an error. opraviť auto = fix a car. za + time = completed in that time. opravovať = to be in the process of correcting." },
+
+  // ── prísť na to ───────────────────────────────────────────────────────────
+  { id:"v_priston1", tag:"prísť na to — to figure out",
+    sentence:"Dlho som nechápal, ale nakoniec som ___ to.",
+    answer:"prišiel na", distractors:["myslel na","zabudol na","narazil na"],
+    full:"Dlho som nechápal, ale nakoniec som <b class='ans'>prišiel na</b> to.", translation:"I didn't understand for a long time, but in the end I figured it out.",
+    rule:"<b>prísť na to</b> = to figure it out (working it out yourself through thinking).",
+    notes:"prísť na to ≠ zistiť (discover by checking) ≠ uvedomiť si (moment of realisation). prísť na to = solved it by thinking. Extremely common in natural speech." },
+
+  // ── opisať vs predstaviť si ───────────────────────────────────────────────
+  { id:"v_opisat1", tag:"opisať vs predstaviť si",
+    sentence:"Ťažké je ___ pocit, keď vidíš niekoho po dlhom čase.",
+    answer:"opisať", distractors:["predstaviť si","pochopiť","vyjadriť"],
+    full:"Ťažké je <b class='ans'>opisať</b> pocit, keď vidíš niekoho po dlhom čase.", translation:"It is difficult to describe the feeling of seeing someone after a long time.",
+    rule:"<b>opisať</b> = to describe in words (perfective). <b>predstaviť si</b> = to picture / imagine.",
+    notes:"opisať = put into words (opis = description). predstaviť si = visualise. predstaviť niekoho = to introduce someone — si is the key difference." },
+
+  // ── mať teplotu ───────────────────────────────────────────────────────────
+  { id:"v_teplota1", tag:"mať teplotu — to have a fever",
+    sentence:"Zostal som doma, lebo som mal ___.",
+    answer:"teplotu", distractors:["únavu","bolesť","nádchu"],
+    full:"Zostal som doma, lebo som mal <b class='ans'>teplotu</b>.", translation:"I stayed home because I had a fever.",
+    rule:"<b>mať teplotu</b> = to have a fever (fixed idiom). teplota = temperature in general, but 'mať teplotu' specifically means running a fever.",
+    notes:"teplota vzduchu = air temperature. mať teplotu = have a fever (body temperature elevated). Same noun, two uses — context determines which." },
+
+  // ── uzdraviť sa ───────────────────────────────────────────────────────────
+  { id:"v_uzdravit1", tag:"uzdraviť sa — to recover",
+    sentence:"Po týždni v posteli sa nakoniec ___.",
+    answer:"uzdravil", distractors:["zlepšil","zobudil","vrátil"],
+    full:"Po týždni v posteli sa nakoniec <b class='ans'>uzdravil</b>.", translation:"After a week in bed he finally recovered.",
+    rule:"<b>uzdraviť sa</b> = to recover / get better (perfective, full recovery). <b>uzdravovať sa</b> = in the process of recovering (ongoing).",
+    notes:"pomaly sa uzdravuje = slowly getting better (imperfective). nakoniec sa uzdravil = finally recovered (perfective). uzdravenie = recovery (noun)." },
+
+  // ── úsilie ────────────────────────────────────────────────────────────────
+  { id:"v_usilie1", tag:"úsilie — sustained effort",
+    sentence:"Projekt si vyžadoval veľa ___, ale výsledok stál za to.",
+    answer:"úsilia", distractors:["práce","peňazí","námahy"],
+    full:"Projekt si vyžadoval veľa <b class='ans'>úsilia</b>, ale výsledok stál za to.", translation:"The project required a lot of effort, but the result was worth it.",
+    rule:"<b>úsilie</b> = sustained purposeful effort (more elevated register). vynaložiť úsilie = to invest effort.",
+    notes:"úsilie vs námaha: námaha = physical exertion (sweat and strain); úsilie = purposeful effort toward a goal (can be mental). Both = effort, but úsilie is the formal/work register." },
+
+  // ── skúška (figurative) ───────────────────────────────────────────────────
+  { id:"v_skuska1", tag:"skúška — exam, but also trial/test",
+    sentence:"Každý rozhovor v cudzom jazyku je ___ odvahy.",
+    answer:"skúška", distractors:["cvičenie","chyba","príležitosť"],
+    full:"Každý rozhovor v cudzom jazyku je <b class='ans'>skúška</b> odvahy.", translation:"Every conversation in a foreign language is a test of courage.",
+    rule:"<b>skúška</b> = exam / test (literal), but widely used figuratively: životná skúška = life's trial, skúška trpezlivosti = test of patience.",
+    notes:"skúšať = to test/rehearse. skúsiť = to try once. skúška in figurative sense is very common — anything hard is a skúška." },
+
+  // ── zdroj ─────────────────────────────────────────────────────────────────
+  { id:"v_zdroj1", tag:"zdroj — source/resource",
+    sentence:"Wikipedia nie je spoľahlivý ___ informácií.",
+    answer:"zdroj", distractors:["základ","dôvod","príklad"],
+    full:"Wikipedia nie je spoľahlivý <b class='ans'>zdroj</b> informácií.", translation:"Wikipedia is not a reliable source of information.",
+    rule:"<b>zdroj</b> = source / resource. Extremely versatile: zdroj informácií, prírodné zdroje (natural resources), zdroj problému (source of a problem).",
+    notes:"informačný zdroj = information source. obnoviteľné zdroje = renewable resources. Used constantly in formal writing and NGO/tech contexts." },
+
+  // ── zasiahnuť ────────────────────────────────────────────────────────────
+  { id:"v_zasiahnuct1", tag:"zasiahnuť — to hit/strike/affect",
+    sentence:"Tá správa ma ___ nečakane — nestíhal som reagovať.",
+    answer:"zasiahla", distractors:["prekvapila","potešila","zaskočila"],
+    full:"Tá správa ma <b class='ans'>zasiahla</b> nečakane — nestíhal som reagovať.", translation:"That news hit me unexpectedly — I couldn't keep up with reacting.",
+    rule:"<b>zasiahnuť</b> = to hit / strike / affect (with immediate, physical-quality impact). Stronger and more visceral than prekvapil or zaskočil.",
+    notes:"zasiahla ma správa = the news hit me. zasiahnutý = affected/hit. zasiahol ho blesk = he was struck by lightning (literal). Both literal and figurative use." },
+
+  // ── pocit ─────────────────────────────────────────────────────────────────
+  { id:"v_pocit1", tag:"pocit — feeling/sense",
+    sentence:"Mám ___, že sa niečo chystá zmeniť.",
+    answer:"pocit", distractors:["pohodu","záujem","záväzok"],
+    full:"Mám <b class='ans'>pocit</b>, že sa niečo chystá zmeniť.", translation:"I have a feeling that something is about to change.",
+    rule:"<b>pocit</b> = feeling / sense. mať pocit = to have a feeling / sense that...",
+    notes:"pocit že... = feeling that (takes že clause). pocit slobody = feeling of freedom (takes genitive). Do NOT confuse with poctivý (conscientious) — unrelated despite similar sound." },
+
+  // ── zohnať ────────────────────────────────────────────────────────────────
+  { id:"v_zohnat1", tag:"zohnať — to track down",
+    sentence:"Lístky na ten koncert som ___ až po dlhom hľadaní.",
+    answer:"zohnal", distractors:["kúpil","stratil","zaplatil"],
+    full:"Lístky na ten koncert som <b class='ans'>zohnal</b> až po dlhom hľadaní.", translation:"I tracked down tickets to that concert only after a long search.",
+    rule:"<b>zohnať</b> = to track down / obtain with effort. Implies searching was needed — not a straightforward purchase.",
+    notes:"zohnať implies difficulty — you had to search, ask around, work for it. kúpiť = simple purchase. zohnať niečo ťažké = obtain something hard to find. Very colloquial but common." },
+
+  // ── poctivý ───────────────────────────────────────────────────────────────
+  { id:"v_poctivy1", tag:"poctivý — conscientious/thorough",
+    sentence:"___ práca sa vždy oplatí — hoci nie vždy hneď.",
+    answer:"Poctivá", distractors:["Ťažká","Dobrá","Nová"],
+    full:"<b class='ans'>Poctivá</b> práca sa vždy oplatí — hoci nie vždy hneď.", translation:"Conscientious work always pays off — although not always immediately.",
+    rule:"<b>poctivý</b> = conscientious / thorough / diligent (doing something with full care and honesty).",
+    notes:"poctivý pracovník = diligent worker. oplatí sa = it pays off. Do NOT confuse with pocit (feeling) — completely unrelated words that only sound similar." },
+
+  // ── prežiť vs zažiť ───────────────────────────────────────────────────────
+  { id:"v_prezit1", tag:"prežiť vs zažiť",
+    sentence:"Tie ťažké chvíle som musel ___.",
+    answer:"prežiť", distractors:["zažiť","zniesť","zabudnúť"],
+    full:"Tie ťažké chvíle som musel <b class='ans'>prežiť</b>.", translation:"I had to get through those difficult moments.",
+    rule:"<b>prežiť</b> = to survive / get through (difficulty — implies it was hard). <b>zažiť</b> = to experience (neutral — can be positive or negative, no survival connotation).",
+    notes:"prežiť búrku = survive a storm. zažiť úspech = experience success. prežiť literally = survive (prežil nehodu = he survived the accident). zažiť is neutral." },
+
+  // ── nakupovať vs nakúpiť vs kúpiť ────────────────────────────────────────
+  { id:"v_nakupit1", tag:"nakupovať / nakúpiť / kúpiť",
+    sentence:"Každý týždeň ___ čerstvé ovocie a zeleninu.",
+    answer:"nakupujem", distractors:["nakúpim","kúpim","kupujem"],
+    full:"Každý týždeň <b class='ans'>nakupujem</b> čerstvé ovocie a zeleninu.", translation:"Every week I do my shopping for fresh fruit and vegetables.",
+    rule:"<b>nakupovať</b> = to shop habitually (the regular activity). <b>nakúpiť</b> = to do a full shop (one completed trip). <b>kúpiť</b> = to buy one specific item.",
+    notes:"nakupujem každý týždeň = I shop weekly (habit). nakúpil som = I did my shopping (one trip). kúpil som jablko = I bought an apple (single item)." },
+
+  // ── mať pochybnosti ───────────────────────────────────────────────────────
+  { id:"v_pochyb1", tag:"mať pochybnosti — to have doubts",
+    sentence:"Mal som ___ o tom, či som urobil správne rozhodnutie.",
+    answer:"pochybnosti", distractors:["obavy","otázky","problémy"],
+    full:"Mal som <b class='ans'>pochybnosti</b> o tom, či som urobil správne rozhodnutie.", translation:"I had doubts about whether I had made the right decision.",
+    rule:"<b>pochybnosti</b> = doubts (almost always used in plural). From pochybovať = to doubt. mať pochybnosti = to have doubts.",
+    notes:"pochybovať o niečom = to doubt something. bez pochybností = without doubt. The plural is natural and expected — pochybnosť (singular) exists but is rare." },
+
+  // ── zamračený ────────────────────────────────────────────────────────────
+  { id:"v_zamr1", tag:"zamračený — overcast / scowling",
+    sentence:"Ráno bolo ___ a ani trochu slnečné.",
+    answer:"zamračené", distractors:["veterné","mrazivé","búrlivé"],
+    full:"Ráno bolo <b class='ans'>zamračené</b> a ani trochu slnečné.", translation:"The morning was overcast and not at all sunny.",
+    rule:"<b>zamračený</b> = overcast / cloudy (weather). From mrak = cloud. Also: zamračil sa = he frowned / scowled — same word for clouds gathering and a face darkening.",
+    notes:"zamračené nebo = overcast sky. zamračil sa = he frowned. mrazivý = freezing; veterný = windy — these don't carry the dual weather/emotional meaning." }
+
+]; // end VQS
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────────────────────────────────────────────
-const KEY = "sk_drill_v1";
+const GRAM_KEY  = "sk_drill_v1";
+const VOCAB_KEY = "sk_vocab_v1";
+let ACTIVE_KEY = GRAM_KEY;
 
-function load() {
-  try { const r = localStorage.getItem(KEY); return r ? JSON.parse(r) : fresh(); }
+function loadFromKey(k) {
+  try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fresh(); }
   catch { return fresh(); }
 }
+function load() { return loadFromKey(ACTIVE_KEY); }
 function fresh() { return { scores: {}, answered: 0, correct: 0 }; }
-function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
+function save(s) { localStorage.setItem(ACTIVE_KEY, JSON.stringify(s)); }
 function score(s, id) { return s.scores[id] ?? 0; }
 function updateScore(s, id, ok) {
   const c = score(s, id);
@@ -690,8 +1120,8 @@ function updateScore(s, id, ok) {
 function weight(sc) { return [10, 7, 4, 2, 1, 0.5][Math.min(sc, 5)]; }
 
 function pick(state, recent) {
-  const pool = QS.filter(q => !recent.includes(q.id));
-  const arr = pool.length ? pool : QS;
+  const pool = ACTIVE_QS.filter(q => !recent.includes(q.id));
+  const arr = pool.length ? pool : ACTIVE_QS;
   const total = arr.reduce((s, q) => s + weight(score(state, q.id)), 0);
   let r = Math.random() * total;
   for (const q of arr) { r -= weight(score(state, q.id)); if (r <= 0) return q; }
@@ -701,6 +1131,7 @@ function pick(state, recent) {
 // ─────────────────────────────────────────────────────────────────────────────
 // APP STATE
 // ─────────────────────────────────────────────────────────────────────────────
+let ACTIVE_QS = QS;
 let APP = load();
 let SES = { done: 0, ok: 0, streak: 0, recent: [] };
 let CUR = null;
@@ -720,23 +1151,30 @@ function show(id) {
 function showHome() { refreshHome(); show("home"); }
 
 function refreshHome() {
-  const tot = APP.answered || 0;
-  const ok  = APP.correct  || 0;
-  const mas = QS.filter(q => score(APP, q.id) >= 4).length;
-  document.getElementById("s-done").textContent = tot;
-  document.getElementById("s-acc").textContent  = tot ? Math.round(ok / tot * 100) + "%" : "—";
-  document.getElementById("s-mastered").textContent = mas;
+  const gapp = loadFromKey(GRAM_KEY);
+  const vapp = loadFromKey(VOCAB_KEY);
+
+  const gtot = gapp.answered || 0, gok = gapp.correct || 0;
+  const gmas = QS.filter(q => (gapp.scores[q.id] ?? 0) >= 4).length;
+  document.getElementById("s-done").textContent = gtot;
+  document.getElementById("s-acc").textContent  = gtot ? Math.round(gok / gtot * 100) + "%" : "—";
+  document.getElementById("s-mastered").textContent = gmas;
+
+  const vtot = vapp.answered || 0, vok = vapp.correct || 0;
+  const vmas = VQS.filter(q => (vapp.scores[q.id] ?? 0) >= 4).length;
+  document.getElementById("v-done").textContent = vtot;
+  document.getElementById("v-acc").textContent  = vtot ? Math.round(vok / vtot * 100) + "%" : "—";
+  document.getElementById("v-mastered").textContent = vmas;
 
   const weakItems = QS
-    .filter(q => APP.scores[q.id] !== undefined && score(APP, q.id) <= 1)
-    .sort((a, b) => score(APP, a.id) - score(APP, b.id))
+    .filter(q => gapp.scores[q.id] !== undefined && (gapp.scores[q.id] ?? 0) <= 1)
+    .sort((a, b) => (gapp.scores[a.id] ?? 0) - (gapp.scores[b.id] ?? 0))
     .slice(0, 5);
-
   const sec = document.getElementById("weak-sec");
   if (weakItems.length) {
     sec.style.display = "";
     document.getElementById("weak-list").innerHTML = weakItems.map(q => {
-      const sc = score(APP, q.id);
+      const sc = gapp.scores[q.id] ?? 0;
       const dots = [0,1,2,3,4].map(i =>
         `<div class="dot ${i < sc ? 'on' : (sc === 0 ? 'bad' : '')}"></div>`).join("");
       return `<div class="weak-row"><div class="topic">${q.tag}</div><div class="dots">${dots}</div></div>`;
@@ -745,7 +1183,8 @@ function refreshHome() {
 }
 
 function resetProg() {
-  localStorage.removeItem(KEY);
+  localStorage.removeItem(GRAM_KEY);
+  localStorage.removeItem(VOCAB_KEY);
   APP = fresh();
   refreshHome();
 }
@@ -753,7 +1192,11 @@ function resetProg() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SESSION
 // ─────────────────────────────────────────────────────────────────────────────
-function startSession() {
+function startSession(type) {
+  if      (type === 'vocab')   { ACTIVE_QS = VQS; ACTIVE_KEY = VOCAB_KEY; }
+  else if (type === 'grammar') { ACTIVE_QS = QS;  ACTIVE_KEY = GRAM_KEY;  }
+  // no type = re-use current active set (e.g. "Another Session" button)
+  APP = load();
   SES = { done: 0, ok: 0, streak: 0, recent: [] };
   show("quiz");
   nextQ();
@@ -892,13 +1335,13 @@ function showSummary() {
   const msg = pct >= 80 ? "Strong session — keep the momentum." :
               pct >= 60 ? "Good work. The tricky ones are queued for more practice." :
                           "Rough session — but that's what the drill is for. Those questions come back.";
-  const mas = QS.filter(q => score(APP, q.id) >= 4).length;
+  const mas = ACTIVE_QS.filter(q => score(APP, q.id) >= 4).length;
   document.getElementById("sum-detail").innerHTML = `
     <p class="sum-msg">${msg}</p>
     <div class="sgrid">
       <div class="scard"><div class="val">${APP.answered}</div><div class="lbl">Total</div></div>
       <div class="scard"><div class="val">${mas}</div><div class="lbl">Mastered</div></div>
-      <div class="scard"><div class="val">${QS.length}</div><div class="lbl">Pool</div></div>
+      <div class="scard"><div class="val">${ACTIVE_QS.length}</div><div class="lbl">Pool</div></div>
     </div>`;
   show("summary");
 }
