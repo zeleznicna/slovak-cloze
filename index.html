@@ -733,9 +733,9 @@ body {
 }
 
 /* ── Translation Practice ── */
-.tr-level-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.btn-level { padding: 12px 4px; font-size: 13px; font-weight: 600; background: var(--card); color: var(--text); border: 1.5px solid var(--border); border-radius: var(--rs); cursor: pointer; transition: opacity .12s; }
-.btn-level:active { opacity: 0.75; }
+.tr-level-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.btn-level { padding: 12px 4px; font-size: 13px; font-weight: 700; background: linear-gradient(90deg, var(--accent), var(--accent2)); color: var(--btn-text); border: none; border-radius: var(--rs); cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.2); transition: transform 0.12s, opacity 0.12s; }
+.btn-level:active { opacity: 0.75; transform: scale(0.98); }
 .tr-en { font-size: 21px; font-weight: 600; line-height: 1.5; margin-bottom: 14px; color: var(--text); }
 .tr-hint { font-size: 13px; color: var(--text2); background: var(--bg2); border-radius: var(--rs); padding: 8px 12px; margin-bottom: 14px; line-height: 1.5; }
 .tr-textarea { width: 100%; border: 2px solid var(--border); border-radius: var(--rs); padding: 13px 14px; font-size: 16px; min-height: 88px; resize: none; background: transparent; color: var(--text); outline: none; margin-bottom: 10px; font-family: inherit; transition: border-color .15s; }
@@ -796,9 +796,10 @@ body {
       <div class="scard"><div class="val" id="tr-mastered">0</div><div class="lbl">Mastered</div></div>
     </div>
     <div class="tr-level-btns">
-      <button class="btn-level" onclick="startTransSession('beginner')">🟢 Beginner</button>
-      <button class="btn-level" onclick="startTransSession('intermediate')">🟡 Intermediate</button>
-      <button class="btn-level" onclick="startTransSession('advanced')">🔴 Advanced</button>
+      <button class="btn-level" onclick="startTransSession('beginner')">Beginner</button>
+      <button class="btn-level" onclick="startTransSession('intermediate')">Intermediate</button>
+      <button class="btn-level" onclick="startTransSession('advanced')">Advanced</button>
+      <button class="btn-level" onclick="startTransSession('very_advanced')">Very Advanced</button>
     </div>
 
     <div style="height:16px"></div>
@@ -1185,6 +1186,58 @@ const TS = [
   { id:"ta22", level:"advanced", en:"She bought a gift for her boyfriend in Bratislava.", sk:"Kúpila darček pre svojho priateľa v Bratislave.", hint:"pre + accusative: priateľ → priateľa; svôj → svojho; v + locative: Bratislave" },
   { id:"ta23", level:"advanced", en:"During Christmas, the whole family is together.", sk:"Počas Vianoc je celá rodina spolu.", hint:"počas + genitive: Vianoce → Vianoc; celá (fem.); spolu = together" },
   { id:"ta24", level:"advanced", en:"The road between the two cities is very long.", sk:"Cesta medzi dvoma mestami je veľmi dlhá.", hint:"medzi + instrumental: dvoma mestami (dual instrumental); dlhá — fem. nom." },
+  // 🟢 MORE BEGINNER
+  { id:"tb21", level:"beginner", en:"The window is open.", sk:"Okno je otvorené.", hint:"okno = neuter; otvorené — neuter passive participle as predicate" },
+  { id:"tb22", level:"beginner", en:"The book is on the table.", sk:"Kniha je na stole.", hint:"na + locative: stôl → stole; kniha = fem." },
+  { id:"tb23", level:"beginner", en:"My father works in the city.", sk:"Môj otec pracuje v meste.", hint:"v + locative: mesto → meste; otec = masc." },
+  { id:"tb24", level:"beginner", en:"I am going home.", sk:"Idem domov.", hint:"domov = homeward (direction); doma = at home (location) — these are different" },
+  { id:"tb25", level:"beginner", en:"They live in Bratislava.", sk:"Bývajú v Bratislave.", hint:"bývať = to live/reside (habitual); v + locative: Bratislava → Bratislave" },
+  { id:"tb26", level:"beginner", en:"The child is playing in the garden.", sk:"Dieťa sa hrá v záhrade.", hint:"hrať sa = to play (reflexive verb); v + locative: záhrada → záhrade" },
+  { id:"tb27", level:"beginner", en:"She is reading a book.", sk:"Číta knihu.", hint:"čítať = to read; kniha → knihu (fem. accusative)" },
+  { id:"tb28", level:"beginner", en:"He works from morning to evening.", sk:"Pracuje od rána do večera.", hint:"od + genitive: ráno → rána; do + genitive: večer → večera" },
+  { id:"tb29", level:"beginner", en:"There is a cat under the chair.", sk:"Pod stoličkou je mačka.", hint:"pod + instrumental (location): stolička → stoličkou; word order: location first is natural" },
+  { id:"tb30", level:"beginner", en:"The child is small and happy.", sk:"Dieťa je malé a šťastné.", hint:"dieťa = child (neuter); malé, šťastné — neuter nominative adjectives" },
+  // 🟡 MORE INTERMEDIATE
+  { id:"ti26", level:"intermediate", en:"I need to call my mother today.", sk:"Dnes potrebujem zavolať mame.", hint:"potrebovať + infinitive; zavolať + dative: mama → mame; dnes = today" },
+  { id:"ti27", level:"intermediate", en:"She was reading when he called.", sk:"Čítala, keď zavolal.", hint:"keď = when; čítať past (fem.): čítala; zavolať past (masc.): zavolal" },
+  { id:"ti28", level:"intermediate", en:"The children are playing outside in the cold.", sk:"Deti sa hrajú vonku v chlade.", hint:"hrať sa = reflexive; v + locative: chlad → chlade; vonku = outside" },
+  { id:"ti29", level:"intermediate", en:"He is afraid of dogs.", sk:"Bojí sa psov.", hint:"báť sa + genitive: pes → psov (gen. pl. animate)" },
+  { id:"ti30", level:"intermediate", en:"She forgot her keys at home.", sk:"Zabudla kľúče doma.", hint:"zabudnúť perf. past (fem.): zabudla; kľúče = accusative plural of kľúč" },
+  { id:"ti31", level:"intermediate", en:"We need to leave before midnight.", sk:"Musíme odísť pred polnocou.", hint:"pred + instrumental: polnoc → polnocou; odísť = to leave (perfective)" },
+  { id:"ti32", level:"intermediate", en:"I have never seen such a big city.", sk:"Nikdy som nevidel také veľké mesto.", hint:"nikdy + ne- negation; také veľké = such a big (neuter acc.)" },
+  { id:"ti33", level:"intermediate", en:"She asked if he had eaten.", sk:"Opýtala sa, či jedol.", hint:"opýtať sa = to ask (perf.); či = whether; jedol = past masc. of jesť" },
+  { id:"ti34", level:"intermediate", en:"He gave the book to his teacher.", sk:"Dal knihu svojmu učiteľovi.", hint:"dative: učiteľ → učiteľovi; svôj → svojmu (masc. dat.); knihu = acc." },
+  { id:"ti35", level:"intermediate", en:"I am used to getting up early.", sk:"Som zvyknutý vstávať skoro.", hint:"byť zvyknutý + infinitive = to be used to; vstávať = to get up (imperfective)" },
+  // 🔴 MORE ADVANCED
+  { id:"ta25", level:"advanced", en:"The more he studied, the less he understood.", sk:"Čím viac sa učil, tým menej rozumel.", hint:"čím...tým = the more...the less; correlative comparative construction" },
+  { id:"ta26", level:"advanced", en:"She has worked here since she finished university.", sk:"Pracuje tu odkedy skončila vysokú školu.", hint:"odkedy = since (temporal); present tense for ongoing action; vysoká škola = university" },
+  { id:"ta27", level:"advanced", en:"He managed to finish the report before the deadline.", sk:"Podarilo sa mu dokončiť správu pred termínom.", hint:"podarilo sa + dative + infinitive = managed to; pred + instrumental: termín → termínom" },
+  { id:"ta28", level:"advanced", en:"I regret that I didn't call her sooner.", sk:"Ľutujem, že som jej nezavolal skôr.", hint:"ľutovať + že clause; negation: nezavolal; dative: jej; skôr = sooner/earlier" },
+  { id:"ta29", level:"advanced", en:"Without her help, I would not have finished it.", sk:"Bez jej pomoci by som to nebol dokončil.", hint:"past conditional: by som nebol dokončil; bez + genitive: pomoc → pomoci" },
+  { id:"ta30", level:"advanced", en:"She told me she had been waiting for over an hour.", sk:"Povedala mi, že čakala viac ako hodinu.", hint:"reported speech (no tense shift in Slovak); viac ako + accusative of duration: hodinu" },
+  { id:"ta31", level:"advanced", en:"The decision he made changed everything.", sk:"Rozhodnutie, ktoré urobil, zmenilo všetko.", hint:"relative clause: ktoré (neuter acc.); zmenilo = neuter past of zmeniť" },
+  { id:"ta32", level:"advanced", en:"He ran away before anyone could stop him.", sk:"Ušiel skôr, ako ho mohol niekto zastaviť.", hint:"skôr ako = before; zastaviť = to stop someone (perf.); mohol = could (past masc.)" },
+  { id:"ta33", level:"advanced", en:"She is used to working late into the night.", sk:"Je zvyknutá pracovať dlho do noci.", hint:"byť zvyknutá + infinitive; do + genitive: noc → noci; dlho = for a long time" },
+  { id:"ta34", level:"advanced", en:"If I had known, I would have acted differently.", sk:"Keby som vedel, bol by som konal inak.", hint:"past conditional: keby + past; result: bol by som konal; inak = differently" },
+  // ⚫ VERY ADVANCED
+  { id:"tva01", level:"very_advanced", en:"The more I think about it, the less I understand it.", sk:"Čím viac o tom premýšľam, tým menej tomu rozumiem.", hint:"čím...tým correlative; rozumieť + dative: tomu; premýšľať o + locative: tom" },
+  { id:"tva02", level:"very_advanced", en:"She acted as if nothing had happened.", sk:"Správala sa, akoby sa nič nestalo.", hint:"akoby + past = as if; nestalo sa — neuter past of stať sa" },
+  { id:"tva03", level:"very_advanced", en:"It depends on whether they have enough time.", sk:"Záleží na tom, či majú dosť času.", hint:"záležať na + locative: tom; či = whether; dosť + genitive: čas → času" },
+  { id:"tva04", level:"very_advanced", en:"I had barely sat down when the phone rang.", sk:"Sotva som si sadol, keď zazvonil telefón.", hint:"sotva = barely/scarcely; sadnúť si = to sit down (perf.); zazvoniť past: zazvonil" },
+  { id:"tva05", level:"very_advanced", en:"Enduring something in silence is not the same as accepting it.", sk:"Znášať niečo v tichu nie je to isté ako prijať to.", hint:"infinitives as subjects; to isté ako = the same as; v tichu = in silence (locative)" },
+  { id:"tva06", level:"very_advanced", en:"The fact that she said nothing was more eloquent than any words.", sk:"Skutočnosť, že nič nepovedala, bola výrečnejšia ako akékoľvek slová.", hint:"noun clause as subject; výrečnejšia = more eloquent (fem. comparative); akékoľvek = any" },
+  { id:"tva07", level:"very_advanced", en:"Without knowing it, he changed her mind.", sk:"Bez toho, aby o tom vedel, zmenil jej názor.", hint:"bez toho, aby + past = without (doing something); vedieť past: vedel; zmenil = changed (perf.)" },
+  { id:"tva08", level:"very_advanced", en:"She said she wouldn't have gone if she had known.", sk:"Povedala, že by nebola išla, keby vedela.", hint:"past conditional: by nebola išla; keby = if (conditional); vedieť past (fem.): vedela" },
+  { id:"tva09", level:"very_advanced", en:"I feel like I've been waiting my whole life for something I can't name.", sk:"Mám pocit, že čakám celý život na niečo, čo neviem pomenovať.", hint:"mať pocit = to feel; celý život = accusative of duration; pomenovať = to name/put a name to" },
+  { id:"tva10", level:"very_advanced", en:"She regrets not having said it when she still had the chance.", sk:"Ľutuje, že to nepovedala vtedy, keď ešte mala príležitosť.", hint:"ľutovať + že clause; vtedy keď = at the time when; príležitosť = opportunity (fem.)" },
+  { id:"tva11", level:"very_advanced", en:"He asked whether I would be willing to try again.", sk:"Opýtal sa, či by som bol ochotný skúsiť to znova.", hint:"indirect question with conditional: či by som; byť ochotný + inf. = to be willing to" },
+  { id:"tva12", level:"very_advanced", en:"Whatever she does, she does it with total commitment.", sk:"Čokoľvek robí, robí to s plným odhodlaním.", hint:"čokoľvek = whatever; s + instrumental: odhodlanie → odhodlaním; plným = adj. instrumental" },
+  { id:"tva13", level:"very_advanced", en:"The harder it is, the more determined she becomes.", sk:"Čím je to ťažšie, tým je odhodlanejšia.", hint:"čím...tým + comparative adjectives; odhodlaná → odhodlanejšia (fem. comparative)" },
+  { id:"tva14", level:"very_advanced", en:"A commitment is not about words — it's about what you do when it's hard.", sk:"Záväzok nie je o slovách — je o tom, čo robíš, keď je to ťažké.", hint:"záväzok = binding commitment; byť o niečom = to be about; o tom, čo + clause" },
+  { id:"tva15", level:"very_advanced", en:"Loneliness is not about being alone — it's about not being understood.", sk:"Osamelosť nie je o tom, že si sám — je o tom, že ťa nikto nerozumie.", hint:"osamelosť = emotional loneliness; nikto + negation: nerozumie; že si sám = being alone" },
+  { id:"tva16", level:"very_advanced", en:"Regret itself changes nothing unless there is determination to act differently behind it.", sk:"Ľutovanie samo o sebe nič nemení, kým za ním nie je odhodlanie konať inak.", hint:"ľutovanie = regret (verbal noun); samo o sebe = in itself; kým... nie je = unless there is; za + instrumental" },
+  { id:"tva17", level:"very_advanced", en:"She led me to a thought I would never have found on my own.", sk:"Priviedla ma k myšlienke, ktorú by som sám nikdy nenašiel.", hint:"priviesť k + dative: myšlienka → myšlienke; conditional: by som nenašiel; sám = on my own" },
+  { id:"tva18", level:"very_advanced", en:"He endured it for years in silence, but bearing something quietly is not the same as accepting it.", sk:"Znášal to roky bez slova, ale znášať niečo v tichu nie je to isté ako prijať to.", hint:"znášať = to endure/bear (imperfective); roky bez slova = for years without a word; infinitive clause as subject" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1474,7 +1527,7 @@ function startTransSession(level) {
   TAPP = loadFromKey(TRANS_KEY);
   TSES = { done: 0, ok: 0, recent: [], level };
   document.getElementById("tr-level-lbl").textContent =
-    level === "beginner" ? "🟢 Beginner" : level === "intermediate" ? "🟡 Intermediate" : "🔴 Advanced";
+    level === "beginner" ? "Beginner" : level === "intermediate" ? "Intermediate" : level === "advanced" ? "Advanced" : "Very Advanced";
   show("translate");
   nextT();
 }
