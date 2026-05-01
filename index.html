@@ -229,7 +229,10 @@ body {
   letter-spacing: 1px;
   margin: 20px 0 10px;
 }
-[data-theme="saffron"] .section-label { color: #ffffff; }
+[data-theme="saffron"] .weak-row {
+  background: linear-gradient(135deg, #0f4a4a, #0a3535);
+  border-color: rgba(255,255,255,0.08);
+}
 
 /* ═══════════════════════════════════════════════════════
    STATS GRID
@@ -743,7 +746,10 @@ body {
         </div>
         <div class="home-hero-sub">Grammar &amp; vocabulary</div>
       </div>
-      <div class="home-hero-sk">SK</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="theme-toggle" onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;line-height:1">🌙</button>
+        <div class="home-hero-sk">SK</div>
+      </div>
     </div>
 
     <div class="section-label">Grammar Drill</div>
@@ -849,7 +855,7 @@ body {
 
 <script type="text/babel">
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "theme": "dark",
+  "theme": "saffron",
   "questionFont": "serif",
   "roundness": "large",
   "animations": true
@@ -973,7 +979,7 @@ const QS = [
   { id:"num2", tag:"Numbers and case", sentence:"Päť ___.", answer:"týždňov", distractors:["týždne","týždeň","týždňom"], full:"Päť <b class='ans'>týždňov</b>.", translation:"Five weeks.", rule:"<b>5+ take genitive plural.</b>", notes:"" },
   { id:"mes1", tag:"meškať vs neskoro", sentence:"Vlak ___.", answer:"mešká", distractors:["je neskoro","neskoro prišiel","prišiel neskoro"], full:"Vlak <b class='ans'>mešká</b>.", translation:"The train is delayed.", rule:"<b>meškať = to be delayed / running late.</b>", notes:"" },
   { id:"mes2", tag:"meškať vs neskoro", sentence:"Prišiel ___.", answer:"neskoro", distractors:["mešká","meška","meškalo"], full:"Prišiel <b class='ans'>neskoro</b>.", translation:"He arrived late.", rule:"<b>neskoro = late (adverb, single point in time).</b>", notes:"" },
-  { id:"svo1", tag:"svôj — reflexive possessive", sentence:"Si veľmi blízko k ___mu cieľu.", answer:"svojmu", distractors:["tvojmu","jemu","vášmu"], full:"Si veľmi blízko k <b class='ans'>svojmu</b> cieľu.", translation:"You are very close to your goal.", rule:"<b>When possessor = subject, use svôj.</b>", notes:"" },
+  { id:"svo1", tag:"svôj — reflexive possessive", sentence:"Si veľmi blízko k ___ cieľu.", answer:"svojmu", distractors:["tvojmu","jemu","vášmu"], full:"Si veľmi blízko k <b class='ans'>svojmu</b> cieľu.", translation:"You are very close to your goal.", rule:"<b>When possessor = subject, use svôj.</b>", notes:"" },
   { id:"svo2", tag:"svôj — reflexive possessive", sentence:"Vzal som si ___ tašku.", answer:"svoju", distractors:["moju","jeho","jej"], full:"Vzal som si <b class='ans'>svoju</b> tašku.", translation:"I took my own bag.", rule:"<b>svôj preferred when possessor = subject.</b>", notes:"" },
   { id:"kol1", tag:"-koľvek suffix", sentence:"Príď ___.", answer:"kedykoľvek", distractors:["niekedy","nikdy","vždy"], full:"Príď <b class='ans'>kedykoľvek</b>.", translation:"Come anytime.", rule:"<b>-koľvek = 'no matter which/when/who'.</b>", notes:"" },
   { id:"kol2", tag:"-koľvek suffix", sentence:"___ problém dokážeš vyriešiť.", answer:"Akýkoľvek", distractors:["Nejaký","Žiadny","Každý"], full:"<b class='ans'>Akýkoľvek</b> problém dokážeš vyriešiť.", translation:"Whatever problem comes up, you can solve it.", rule:"<b>akýkoľvek = any kind of / whichever.</b>", notes:"" },
@@ -986,7 +992,7 @@ const QS = [
   { id:"mbs1", tag:"mal by si sa — you should + reflexive", sentence:"Mala by si ___ hanbiť.", answer:"sa", distractors:["si","mu","sa sa"], full:"Mala by si <b class='ans'>sa</b> hanbiť.", translation:"You should be ashamed of yourself.", rule:"<b>mala by si sa + reflexive verb.</b>", notes:"" },
   { id:"spr1", tag:"správať sa k — to treat / behave toward", sentence:"Správa sa k nám ___.", answer:"dobre", distractors:["dobrý","dobrá","dobré"], full:"Správa sa k nám <b class='ans'>dobre</b>.", translation:"He treats us well.", rule:"<b>správať sa k + dative = behave toward.</b>", notes:"" },
   { id:"rep1", tag:"Reported speech with že", sentence:"Povedala mi, ___ je to len kamarátstvo.", answer:"že", distractors:["keď","kedy","ako"], full:"Povedala mi, <b class='ans'>že</b> je to len kamarátstvo.", translation:"She told me that it's just friendship.", rule:"<b>Reported speech requires že.</b>", notes:"" },
-  { id:"sti1", tag:"stihnúť — to get done in time", sentence:"Nestíham behať.", answer:"I'm not managing to fit in running", distractors:["I never run","I stopped running","I won't run"], full:"Nestíham behať.", translation:"I'm not managing to fit in running.", rule:"<b>nestíham = I can't keep up / I'm not managing.</b>", notes:"" },
+  { id:"sti1", tag:"stihnúť — to get done in time", sentence:"___ behať.", answer:"Nestíham", distractors:["Nechcem","Neviem","Nedokážem"], full:"<b class='ans'>Nestíham</b> behať.", translation:"I'm not managing to fit in running.", rule:"<b>nestíhať = to not manage to fit something in / can't keep up.</b>", notes:"" },
   { id:"ank1", tag:"ako nikdy — more than ever", sentence:"Som unavený ako ___.", answer:"nikdy", distractors:["vždy","niekedy","kedykoľvek"], full:"Som unavený ako <b class='ans'>nikdy</b>.", translation:"I'm more tired than ever.", rule:"<b>ako nikdy = as never before.</b>", notes:"" },
   { id:"dos1", tag:"dosť — always 'enough'", sentence:"Dosť ___ problémov.", answer:"veľa", distractors:["veľký","veľká","veľké"], full:"Dosť <b class='ans'>veľa</b> problémov.", translation:"Quite a lot of problems.", rule:"<b>dosť = enough (always and only).</b>", notes:"" },
   { id:"zoz1", tag:"zoznámiť sa vs zoznámiť", sentence:"Zoznám ___ s BB.", answer:"ťa", distractors:["sa ťa","si ťa","sa"], full:"Zoznám <b class='ans'>ťa</b> s BB.", translation:"I'll introduce you to BB.", rule:"<b>When introducing others, sa disappears.</b>", notes:"" },
@@ -1031,7 +1037,7 @@ const VQS = [
   { id:"v_ocakavanie1", tag:"očakávanie vs sklamanie", sentence:"___ je niekedy ťažšie ako samotný výsledok.", answer:"Očakávanie", distractors:["Sklamanie","Rozhodnutie","Výsledok"], full:"<b class='ans'>Očakávanie</b> je niekedy ťažšie ako samotný výsledok.", translation:"Expectation is sometimes harder than the actual result.", rule:"<b>očakávanie</b> = expectation. <b>sklamanie</b> = disappointment.", notes:"" },
   { id:"v_spomienka1", tag:"spomienka — memory/recollection", sentence:"___ na ten deň sa vracia v najneočakávanejších momentoch.", answer:"Spomienka", distractors:["Pocit","Myšlienka","Zážitok"], full:"<b class='ans'>Spomienka</b> na ten deň sa vracia.", translation:"The memory of that day returns in unexpected moments.", rule:"<b>spomienka</b> = a memory / recollection.", notes:"" },
   { id:"v_pohoda1", tag:"pohoda — ease/wellbeing", sentence:"Po tréningu nastáva ___, ktorú nič iné nevyvolá.", answer:"pohoda", distractors:["únava","bolesť","radosť"], full:"Po tréningu nastáva <b class='ans'>pohoda</b>.", translation:"After training comes an ease that nothing else creates.", rule:"<b>pohoda</b> = relaxed ease / wellbeing.", notes:"" },
-  { id:"v_hlboky1", tag:"hlboký vs plytký", sentence:"Chcel som ___ rozhovor, nie len small talk.", answer:"hlboký", distractors:["plytký","krátky","jednoduchý"], full:"Chcel som <b class='ans'>hlboký</b> rozhovor.", translation:"I wanted a deep conversation.", rule:"<b>hlboký</b> = deep. <b>plytký</b> = shallow.", notes:"" },
+  { id:"v_hlboky1", tag:"hlboký vs plytký", sentence:"Chcel som ___ rozhovor, nie len povrchný.", answer:"hlboký", distractors:["plytký","krátky","jednoduchý"], full:"Chcel som <b class='ans'>hlboký</b> rozhovor.", translation:"I wanted a deep conversation.", rule:"<b>hlboký</b> = deep. <b>plytký</b> = shallow.", notes:"" },
   { id:"v_silny1", tag:"silný / slabý for intensity", sentence:"Káva bola príliš ___ — celú noc som nespal.", answer:"silná", distractors:["slabá","horúca","studená"], full:"Káva bola príliš <b class='ans'>silná</b>.", translation:"The coffee was too strong.", rule:"<b>silný / slabý</b> for people and drinks.", notes:"" },
   { id:"v_hruby1", tag:"hrubý vs tenký", sentence:"Múry starého hradu boli ___ a chladné.", answer:"hrubé", distractors:["tenké","vysoké","pevné"], full:"Múry starého hradu boli <b class='ans'>hrubé</b>.", translation:"The walls of the old castle were thick and cold.", rule:"<b>hrubý</b> = thick. <b>tenký</b> = thin.", notes:"" },
   { id:"vmb_pocit1", tag:"pocit — feeling/sense", sentence:"Mám ___, že poctivá práca sa vždy oplatí.", answer:"pocit", distractors:["dojem","názor","presvedčenie"], full:"Mám <b class='ans'>pocit</b>, že poctivá práca sa vždy oplatí.", translation:"I have a feeling that conscientious work always pays off.", rule:"<b>pocit</b> = feeling/sense (noun).", notes:"" },
@@ -1307,8 +1313,47 @@ function shuffle(a) {
   return b;
 }
 
+// THEME TOGGLE
+function toggleTheme() {
+  const root = document.documentElement;
+  const current = root.getAttribute('data-theme');
+  const next = current === 'saffron' ? 'dark' : 'saffron';
+  if (next === 'dark') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', next);
+  document.getElementById('theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+  // persist
+  try {
+    const saved = JSON.parse(localStorage.getItem('__tweaks__') || '{}');
+    saved.theme = next;
+    localStorage.setItem('__tweaks__', JSON.stringify(saved));
+  } catch(e) {}
+}
+
+// ── PASTE NEW VOCAB QUESTIONS HERE ───────────────────────────────────────────
+// One question per line, tab-separated. Lines starting with # are ignored.
+// Fields: id [TAB] tag [TAB] sentence(with ___) [TAB] answer [TAB] dist1,dist2,dist3 [TAB] translation [TAB] rule [TAB] notes
+const USER_Q = `
+`;
+// ─────────────────────────────────────────────────────────────────────────────
+for (const line of USER_Q.split('\n')) {
+  const t = line.trim();
+  if (!t || t.startsWith('#')) continue;
+  const [id, tag, sentence, answer, dists, translation, rule, notes] = t.split('\t');
+  if (!id || !sentence || !answer) continue;
+  const distractors = (dists||'').split(',').map(s=>s.trim()).filter(Boolean);
+  VQS.push({ id, tag:tag||'', sentence, answer, distractors,
+    full: sentence.replace('___', "<b class='ans'>"+answer+"</b>"),
+    translation:translation||'', rule:rule||'', notes:notes||'' });
+}
+
 // INIT
 showHome();
+// Set correct icon on load
+(function() {
+  const theme = document.documentElement.getAttribute('data-theme');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'saffron' ? '🌙' : '☀️';
+})();
 </script>
 </body>
 </html>
