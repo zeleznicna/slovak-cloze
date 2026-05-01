@@ -1402,9 +1402,7 @@ function updateProgress() {
 }
 
 function renderQ() {
-  const tagEl = document.getElementById("q-tag");
-  if (ACTIVE_QS === VQS) { tagEl.style.display = "none"; }
-  else { tagEl.style.display = ""; tagEl.textContent = CUR.tag; }
+  document.getElementById("q-tag").style.display = "none";
   document.getElementById("q-sent").innerHTML =
     CUR.sentence.replace("___", "<span class='blank'>___</span>");
   const transEl = document.getElementById("q-trans");
