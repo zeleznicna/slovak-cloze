@@ -731,6 +731,23 @@ body {
   text-align: center;
   padding: 0 8px;
 }
+
+/* ── Translation Practice ── */
+.tr-level-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.btn-level { padding: 12px 4px; font-size: 13px; font-weight: 600; background: var(--card); color: var(--text); border: 1.5px solid var(--border); border-radius: var(--rs); cursor: pointer; transition: opacity .12s; }
+.btn-level:active { opacity: 0.75; }
+.tr-en { font-size: 21px; font-weight: 600; line-height: 1.5; margin-bottom: 14px; color: var(--text); }
+.tr-hint { font-size: 13px; color: var(--text2); background: var(--bg2); border-radius: var(--rs); padding: 8px 12px; margin-bottom: 14px; line-height: 1.5; }
+.tr-textarea { width: 100%; border: 2px solid var(--border); border-radius: var(--rs); padding: 13px 14px; font-size: 16px; min-height: 88px; resize: none; background: transparent; color: var(--text); outline: none; margin-bottom: 10px; font-family: inherit; transition: border-color .15s; }
+.tr-textarea:focus { border-color: var(--accent); }
+.tr-textarea:disabled { opacity: 0.75; }
+.tr-answer-card { background: var(--ok-bg); border: 1.5px solid var(--ok); border-radius: var(--r); padding: 16px 18px; margin-top: 12px; animation: fadeUp .2s ease; }
+.tr-answer-label { font-size: 11px; font-weight: 700; color: var(--ok); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+.tr-answer-sk { font-size: 20px; font-weight: 600; line-height: 1.5; color: var(--text); margin-bottom: 8px; }
+.tr-answer-hint { font-size: 12px; color: var(--text2); }
+.tr-mark-row { display: flex; gap: 10px; margin-top: 12px; }
+.btn-got-it  { flex: 1; background: var(--ok);  color: #fff; border: none; border-radius: var(--rs); padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-not-quite { flex: 1; background: var(--err); color: #fff; border: none; border-radius: var(--rs); padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -772,8 +789,47 @@ body {
     </div>
     <button class="btn btn-primary" onclick="startSession('vocab')">Vocabulary Practice <span style="opacity:0.75;font-weight:500;font-size:13px">· 10 questions</span></button>
 
+    <div class="section-label">Translation Practice</div>
+    <div class="sgrid">
+      <div class="scard"><div class="val" id="tr-done">0</div><div class="lbl">Done</div></div>
+      <div class="scard"><div class="val" id="tr-acc">—</div><div class="lbl">Got it</div></div>
+      <div class="scard"><div class="val" id="tr-mastered">0</div><div class="lbl">Mastered</div></div>
+    </div>
+    <div class="tr-level-btns">
+      <button class="btn-level" onclick="startTransSession('beginner')">🟢 Beginner</button>
+      <button class="btn-level" onclick="startTransSession('intermediate')">🟡 Intermediate</button>
+      <button class="btn-level" onclick="startTransSession('advanced')">🔴 Advanced</button>
+    </div>
+
     <div style="height:16px"></div>
     <button class="btn btn-danger" onclick="if(confirm('Reset all progress?')){resetProg();}">Reset Progress</button>
+  </div>
+
+  <!-- ═══ TRANSLATE ═══ -->
+  <div id="translate" class="screen">
+    <div class="quiz-hdr">
+      <button class="back-btn" onclick="endTransSession()">←</button>
+      <span class="sess-info" id="tr-count"></span>
+      <span id="tr-level-lbl" style="font-size:13px;color:var(--text2)"></span>
+    </div>
+    <div class="prog"><div class="prog-fill" id="tr-prog-fill"></div></div>
+
+    <div class="mode-row">
+      <button class="mode-btn" id="hint-tog" onclick="toggleHints()">Hide hint</button>
+    </div>
+
+    <div class="q-card">
+      <div class="tr-en" id="tr-en"></div>
+      <div class="tr-hint" id="tr-hint"></div>
+      <textarea class="tr-textarea" id="tr-input" placeholder="Type your Slovak translation…"></textarea>
+      <button class="btn btn-primary" id="tr-reveal-btn" onclick="revealT()">Reveal answer</button>
+    </div>
+
+    <div id="tr-answer-area"></div>
+    <div class="tr-mark-row" id="tr-mark-row" style="display:none">
+      <button class="btn-got-it"   onclick="markT(true)">✓ Got it</button>
+      <button class="btn-not-quite" onclick="markT(false)">✗ Not quite</button>
+    </div>
   </div>
 
   <!-- ═══ QUIZ ═══ -->
@@ -841,7 +897,7 @@ body {
     <div class="sgrid" id="sum-stats"></div>
 
     <div style="height:20px"></div>
-    <button class="btn btn-primary" onclick="startSession()">Another Session</button>
+    <button class="btn btn-primary" id="sum-again-btn" onclick="startSession(ACTIVE_KEY === VOCAB_KEY ? 'vocab' : 'grammar')">Another Session</button>
     <button class="btn btn-secondary" onclick="showHome()">Home</button>
   </div>
 
@@ -1054,10 +1110,89 @@ const VQS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TRANSLATION SENTENCES
+// ─────────────────────────────────────────────────────────────────────────────
+const TS = [
+  // 🟢 BEGINNER
+  { id:"tb01", level:"beginner", en:"My mother is at home.", sk:"Moja mama je doma.", hint:"byť + doma — no preposition needed for 'at home'" },
+  { id:"tb02", level:"beginner", en:"My brother is tall and thin.", sk:"Môj brat je vysoký a chudý.", hint:"adjective agreement — masculine nominative: vysoký, chudý" },
+  { id:"tb03", level:"beginner", en:"Her sister is sick today.", sk:"Jej sestra je dnes chorá.", hint:"possessive jej + fem. nominative adjective chorá; dnes = today" },
+  { id:"tb04", level:"beginner", en:"My family is big.", sk:"Moja rodina je veľká.", hint:"rodina = family (fem.); veľká — feminine nominative adjective" },
+  { id:"tb05", level:"beginner", en:"My grandmother is old.", sk:"Moja stará mama je stará.", hint:"stará mama = grandmother (standard); babička = grandma/granny (informal everyday word); stará — feminine nominative adjective" },
+  { id:"tb06", level:"beginner", en:"I eat bread and cheese every day.", sk:"Každý deň jem chlieb a syr.", hint:"accusative: chlieb (masc.), syr (masc.); každý deň = every day" },
+  { id:"tb07", level:"beginner", en:"She drinks coffee in the morning.", sk:"Ráno pije kávu.", hint:"káva → kávu (fem. accusative); ráno = in the morning" },
+  { id:"tb08", level:"beginner", en:"The soup is hot and tasty.", sk:"Polievka je horúca a chutná.", hint:"polievka = soup (fem.); horúca, chutná — feminine nominative" },
+  { id:"tb09", level:"beginner", en:"We want water, please.", sk:"Chceme vodu, prosím.", hint:"voda → vodu (fem. accusative); chcieť = to want" },
+  { id:"tb10", level:"beginner", en:"He buys bread at the shop.", sk:"Kupuje chlieb v obchode.", hint:"v + locative: obchod → v obchode; chlieb = accusative" },
+  { id:"tb11", level:"beginner", en:"The bus stops in front of the church.", sk:"Autobus zastavuje pred kostolom.", hint:"pred + instrumental: kostol → kostolom" },
+  { id:"tb12", level:"beginner", en:"The train goes to the city.", sk:"Vlak ide do mesta.", hint:"do + genitive: mesto → mesta" },
+  { id:"tb13", level:"beginner", en:"The airport is far from the village.", sk:"Letisko je ďaleko od dediny.", hint:"od + genitive: dedina → dediny; ďaleko = far" },
+  { id:"tb14", level:"beginner", en:"She walks to school every morning.", sk:"Každé ráno chodí do školy.", hint:"do + genitive: škola → školy; každé ráno = every morning" },
+  { id:"tb15", level:"beginner", en:"The cinema is next to the church.", sk:"Kino je vedľa kostola.", hint:"vedľa + genitive: kostol → kostola" },
+  { id:"tb16", level:"beginner", en:"The sky is blue and the grass is green.", sk:"Obloha je modrá a tráva je zelená.", hint:"two clauses; colours as predicates — fem. nominative: modrá, zelená" },
+  { id:"tb17", level:"beginner", en:"Her dress is long and red.", sk:"Jej šaty sú dlhé a červené.", hint:"šaty = dress (neuter plural); dlhé, červené — neuter plural adjectives" },
+  { id:"tb18", level:"beginner", en:"His jacket is black.", sk:"Jeho bunda je čierna.", hint:"bunda = jacket (fem.); čierna — feminine nominative" },
+  { id:"tb19", level:"beginner", en:"The flower is beautiful.", sk:"Kvet je krásny.", hint:"kvet = flower (masc.); krásny — masculine nominative" },
+  { id:"tb20", level:"beginner", en:"The lake is cold in winter.", sk:"Jazero je v zime studené.", hint:"v + locative: zima → v zime; studené — neuter nominative" },
+  // 🟡 INTERMEDIATE
+  { id:"ti01", level:"intermediate", en:"I was at the gym yesterday.", sk:"Včera som bol v posilňovni.", hint:"byť past (bol/bola); v + locative: posilňovňa → v posilňovni" },
+  { id:"ti02", level:"intermediate", en:"She will read a book tomorrow.", sk:"Zajtra bude čítať knihu.", hint:"future: bude + infinitive; kniha → knihu (acc.); zajtra = tomorrow" },
+  { id:"ti03", level:"intermediate", en:"We went to the forest on Saturday.", sk:"V sobotu sme išli do lesa.", hint:"past tense of ísť (išli); do + genitive: les → lesa; v sobotu" },
+  { id:"ti04", level:"intermediate", en:"They were tired after the journey.", sk:"Po ceste boli unavení.", hint:"po + locative: cesta → ceste; unavení — masc. animate plural" },
+  { id:"ti05", level:"intermediate", en:"He is having fun at the party.", sk:"Baví sa na párty.", hint:"baviť sa = to have fun (reflexive); na + locative: na párty" },
+  { id:"ti06", level:"intermediate", en:"The dog is sleeping under the table.", sk:"Pes spí pod stolom.", hint:"pod + instrumental: stôl → stolom" },
+  { id:"ti07", level:"intermediate", en:"She is sitting next to the window.", sk:"Sedí vedľa okna.", hint:"vedľa + genitive: okno → okna" },
+  { id:"ti08", level:"intermediate", en:"The cat is between the chair and the door.", sk:"Mačka je medzi stoličkou a dverami.", hint:"medzi + instrumental (two objects): stolička → stoličkou, dvere → dverami" },
+  { id:"ti09", level:"intermediate", en:"He is standing in front of the hospital.", sk:"Stojí pred nemocnicou.", hint:"pred + instrumental: nemocnica → nemocnicou" },
+  { id:"ti10", level:"intermediate", en:"The keys are on the table without her bag.", sk:"Kľúče sú na stole bez jej tašky.", hint:"na + locative: stôl → stole; bez + genitive: taška → tašky" },
+  { id:"ti11", level:"intermediate", en:"Where are you going on vacation?", sk:"Kam ideš na dovolenku?", hint:"kam = where (to); dovolenka → dovolenku (acc.); ísť = to go" },
+  { id:"ti12", level:"intermediate", en:"When does the train leave?", sk:"Kedy odchádza vlak?", hint:"kedy = when; odchádzať = to depart (imperfective)" },
+  { id:"ti13", level:"intermediate", en:"Why is she sad today?", sk:"Prečo je dnes smutná?", hint:"prečo = why; smutná — feminine nominative adjective" },
+  { id:"ti14", level:"intermediate", en:"Who is sitting at the table?", sk:"Kto sedí pri stole?", hint:"kto = who; pri + locative: stôl → pri stole" },
+  { id:"ti15", level:"intermediate", en:"How long is the road to the airport?", sk:"Ako dlhá je cesta na letisko?", hint:"ako dlhá = how long (fem.); cesta = road (fem.); na + accusative: letisko" },
+  { id:"ti16", level:"intermediate", en:"I am hungry but the restaurant is closed.", sk:"Som hladný, ale reštaurácia je zatvorená.", hint:"ale = but (contrast); zatvorená — fem. passive participle as predicate" },
+  { id:"ti17", level:"intermediate", en:"She is tired because she ran a lot.", sk:"Je unavená, lebo veľa bežala.", hint:"lebo = because; bežať past (fem.): bežala; veľa = a lot" },
+  { id:"ti18", level:"intermediate", en:"He studies or he sleeps, nothing more.", sk:"Buď sa učí, alebo spí, nič viac.", hint:"buď... alebo = either... or; nič viac = nothing more" },
+  { id:"ti19", level:"intermediate", en:"It was raining so we stayed at home.", sk:"Pršalo, tak sme zostali doma.", hint:"pršať past: pršalo; tak = so/therefore; zostať past: zostali" },
+  { id:"ti20", level:"intermediate", en:"She speaks slowly so that he understands.", sk:"Hovorí pomaly, aby rozumel.", hint:"aby + past = so that (purpose clause); rozumieť past (masc.): rozumel" },
+  { id:"ti21", level:"intermediate", en:"My knee hurts after running.", sk:"Po behu ma bolí koleno.", hint:"po + locative: beh → behu; bolieť — 3rd person: bolí; koleno = knee" },
+  { id:"ti22", level:"intermediate", en:"She has long hair and a small nose.", sk:"Má dlhé vlasy a malý nos.", hint:"mať = to have; vlasy = hair (masc. pl.): dlhé; nos = nose (masc.): malý" },
+  { id:"ti23", level:"intermediate", en:"His back is strong.", sk:"Jeho chrbát je silný.", hint:"chrbát = back (masc.); silný — masculine nominative adjective" },
+  { id:"ti24", level:"intermediate", en:"They are going to the doctor on Friday.", sk:"V piatok idú k lekárovi.", hint:"k + dative: lekár → lekárovi; v piatok = on Friday" },
+  { id:"ti25", level:"intermediate", en:"I did not sleep well last night.", sk:"Minulú noc som dobre nespal.", hint:"negation: ne- prefix on past verb; minulú noc = last night (acc. of time)" },
+  // 🔴 ADVANCED
+  { id:"ta01", level:"advanced", en:"I have been learning Slovak for fourteen months.", sk:"Učím sa slovenčinu už štrnásť mesiacov.", hint:"duration with present tense (ongoing action); mesiacov = months (gen. pl.)" },
+  { id:"ta02", level:"advanced", en:"She would like to try something new.", sk:"Chcela by vyskúšať niečo nové.", hint:"conditional: chcieť + by + infinitive; niečo nové = something new" },
+  { id:"ta03", level:"advanced", en:"We need to buy bread before the shop closes.", sk:"Musíme kúpiť chlieb, kým sa obchod nezatvorí.", hint:"kým... ne- = before (with negation); zatвориť sa future: nezatvorí" },
+  { id:"ta04", level:"advanced", en:"He told me he was sure about the decision.", sk:"Povedal mi, že si je istý tým rozhodnutím.", hint:"reported speech; byť si istý + instrumental: rozhodnutie → rozhodnutím" },
+  { id:"ta05", level:"advanced", en:"Meeting new people makes me happy.", sk:"Spoznávanie nových ľudí ma robí šťastným.", hint:"verbal noun spoznávanie as subject; robiť + instr. adjective: šťastným" },
+  { id:"ta06", level:"advanced", en:"If I had more time, I would travel by train.", sk:"Keby som mal viac času, cestoval by som vlakom.", hint:"conditional: keby + past; result: by som + past; vlakom = by train (instr.)" },
+  { id:"ta07", level:"advanced", en:"She said that she would call me during the week.", sk:"Povedala, že mi zavolá počas týždňa.", hint:"reported speech; počas + genitive: týždeň → týždňa; zavolať future" },
+  { id:"ta08", level:"advanced", en:"Even though it was raining, we walked along the river.", sk:"Hoci pršalo, šli sme pozdĺž rieky.", hint:"hoci = even though (concessive); pozdĺž + genitive: rieka → rieky" },
+  { id:"ta09", level:"advanced", en:"Since he left without saying goodbye, she is sad.", sk:"Keďže odišiel bez rozlúčky, je smutná.", hint:"keďže = since/because; bez + genitive: rozlúčka → rozlúčky" },
+  { id:"ta10", level:"advanced", en:"I kissed her on the cheek and she smiled.", sk:"Pobozkal som ju na líce a ona sa usmiala.", hint:"na + accusative: líce (cheek); usmiať sa past (fem.): usmiala sa" },
+  { id:"ta11", level:"advanced", en:"There is a rainbow over the hills after the rain.", sk:"Po daždi je nad kopcami dúha.", hint:"po + locative: dážď → daždi; nad + instrumental (pl.): kopec → kopcami" },
+  { id:"ta12", level:"advanced", en:"The fog was so thick that we could not see the road.", sk:"Hmla bola taká hustá, že sme nevideli cestu.", hint:"tak(á)... že = so... that; negation nevidieť; cestu = accusative of cesta" },
+  { id:"ta13", level:"advanced", en:"In autumn the leaves fall from the trees.", sk:"Na jeseň padajú listy zo stromov.", hint:"na jeseň = in autumn; zo + genitive (pl.): strom → stromov; padať = to fall" },
+  { id:"ta14", level:"advanced", en:"She looked at the stars and thought about her mother.", sk:"Pozrela sa na hviezdy a myslela na svoju mamu.", hint:"pozrieť sa na + acc.; myslieť na + acc.; svoju = reflexive possessive (fem. acc.)" },
+  { id:"ta15", level:"advanced", en:"The river runs between the forest and the village.", sk:"Rieka tečie medzi lesom a dedinou.", hint:"medzi + instrumental (two nouns): les → lesom, dedina → dedinou" },
+  { id:"ta16", level:"advanced", en:"He sent the document to her without any mistakes.", sk:"Poslal jej dokument bez akýchkoľvek chýb.", hint:"bez + genitive (pl.): chyba → chýb; akýchkoľvek = any (gen. pl.)" },
+  { id:"ta17", level:"advanced", en:"The homework is on the table next to the computer.", sk:"Domáca úloha je na stole vedľa počítača.", hint:"na + locative: stôl → stole; vedľa + genitive: počítač → počítača" },
+  { id:"ta18", level:"advanced", en:"During the lesson, the teacher explained the goal.", sk:"Počas hodiny učiteľ vysvetlil cieľ.", hint:"počas + genitive: hodina → hodiny; vysvetliť past (perf.); cieľ = accusative" },
+  { id:"ta19", level:"advanced", en:"She searched for evidence on the internet.", sk:"Hľadala dôkazy na internete.", hint:"hľadať = to search for (imperfective); dôkaz → dôkazy (acc. pl.); na internete" },
+  { id:"ta20", level:"advanced", en:"He is flying from Slovakia to Australia next Friday.", sk:"Budúci piatok letí zo Slovenska do Austrálie.", hint:"zo + genitive: Slovensko → Slovenska; do + genitive: Austrália → Austrálie" },
+  { id:"ta21", level:"advanced", en:"They have never been to a foreign country before.", sk:"Nikdy predtým neboli v cudzej krajine.", hint:"nikdy... ne- = never; v + locative: krajina → krajine; cudzej (gen./loc. adj.)" },
+  { id:"ta22", level:"advanced", en:"She bought a gift for her boyfriend in Bratislava.", sk:"Kúpila darček pre svojho priateľa v Bratislave.", hint:"pre + accusative: priateľ → priateľa; svôj → svojho; v + locative: Bratislave" },
+  { id:"ta23", level:"advanced", en:"During Christmas, the whole family is together.", sk:"Počas Vianoc je celá rodina spolu.", hint:"počas + genitive: Vianoce → Vianoc; celá (fem.); spolu = together" },
+  { id:"ta24", level:"advanced", en:"The road between the two cities is very long.", sk:"Cesta medzi dvoma mestami je veľmi dlhá.", hint:"medzi + instrumental: dvoma mestami (dual instrumental); dlhá — fem. nom." },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────────────────────────────────────────────
 const GRAM_KEY  = "sk_drill_v1";
 const VOCAB_KEY = "sk_vocab_v1";
+const TRANS_KEY = "sk_trans_v1";
 let ACTIVE_KEY = GRAM_KEY;
 
 function loadFromKey(k) {
@@ -1101,6 +1236,14 @@ let DONE = false;
 let HIDE_TRANS = false;
 const SES_LEN = 10;
 
+// Translation state
+let TAPP = loadFromKey(TRANS_KEY);
+let TSES = { done: 0, ok: 0, recent: [] };
+let TCUR = null;
+let ACTIVE_TS = [];
+let SHOW_HINTS = true;
+let TRANS_REVEALED = false;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SCREENS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1138,12 +1281,20 @@ function refreshHome() {
       return `<div class="weak-row"><div class="topic">${q.tag}</div><div class="dots">${dots}</div></div>`;
     }).join("");
   } else { sec.style.display = "none"; }
+  const tapp = loadFromKey(TRANS_KEY);
+  const ttot = tapp.answered || 0, tok = tapp.correct || 0;
+  const tmas = TS.filter(t => (tapp.scores[t.id] ?? 0) >= 4).length;
+  document.getElementById("tr-done").textContent = ttot;
+  document.getElementById("tr-acc").textContent  = ttot ? Math.round(tok / ttot * 100) + "%" : "—";
+  document.getElementById("tr-mastered").textContent = tmas;
 }
 
 function resetProg() {
   localStorage.removeItem(GRAM_KEY);
   localStorage.removeItem(VOCAB_KEY);
+  localStorage.removeItem(TRANS_KEY);
   APP = fresh();
+  TAPP = loadFromKey(TRANS_KEY);
   refreshHome();
 }
 
@@ -1298,6 +1449,8 @@ function showSummary() {
     <div class="scard"><div class="val">${APP.answered}</div><div class="lbl">Total</div></div>
     <div class="scard"><div class="val">${mas}</div><div class="lbl">Mastered</div></div>
     <div class="scard"><div class="val">${ACTIVE_QS.length}</div><div class="lbl">Pool</div></div>`;
+  document.getElementById("sum-again-btn").onclick =
+    () => startSession(ACTIVE_KEY === VOCAB_KEY ? 'vocab' : 'grammar');
   show("summary");
 }
 
@@ -1311,6 +1464,122 @@ function shuffle(a) {
     [b[i], b[j]] = [b[j], b[i]];
   }
   return b;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRANSLATION PRACTICE
+// ─────────────────────────────────────────────────────────────────────────────
+function startTransSession(level) {
+  ACTIVE_TS = TS.filter(t => t.level === level);
+  TAPP = loadFromKey(TRANS_KEY);
+  TSES = { done: 0, ok: 0, recent: [], level };
+  document.getElementById("tr-level-lbl").textContent =
+    level === "beginner" ? "🟢 Beginner" : level === "intermediate" ? "🟡 Intermediate" : "🔴 Advanced";
+  show("translate");
+  nextT();
+}
+
+function endTransSession() { TSES.done > 0 ? showTransSummary() : showHome(); }
+
+function nextT() {
+  TRANS_REVEALED = false;
+  document.getElementById("tr-answer-area").innerHTML = "";
+  document.getElementById("tr-mark-row").style.display = "none";
+  document.getElementById("tr-reveal-btn").style.display = "";
+  document.getElementById("tr-input").value = "";
+  document.getElementById("tr-input").disabled = false;
+  if (TSES.done >= SES_LEN) { showTransSummary(); return; }
+  TCUR = pickT();
+  TSES.recent.push(TCUR.id);
+  if (TSES.recent.length > 8) TSES.recent.shift();
+  renderT();
+  updateTransProgress();
+}
+
+function pickT() {
+  const weights = [10, 7, 4, 2, 1, 0.5];
+  const pool = ACTIVE_TS.filter(t => !TSES.recent.includes(t.id));
+  const src = pool.length ? pool : ACTIVE_TS;
+  const scored = src.map(t => {
+    const sc = TAPP.scores[t.id] ?? 0;
+    return { t, w: weights[Math.min(sc, 5)] };
+  });
+  const total = scored.reduce((s, x) => s + x.w, 0);
+  let r = Math.random() * total;
+  for (const { t, w } of scored) { r -= w; if (r <= 0) return t; }
+  return scored[scored.length - 1].t;
+}
+
+function renderT() {
+  document.getElementById("tr-en").textContent = TCUR.en;
+  const hintEl = document.getElementById("tr-hint");
+  hintEl.textContent = TCUR.hint || "";
+  hintEl.style.display = (SHOW_HINTS && TCUR.hint) ? "" : "none";
+  document.getElementById("tr-input").focus();
+}
+
+function updateTransProgress() {
+  document.getElementById("tr-prog-fill").style.width = (TSES.done / SES_LEN * 100) + "%";
+  document.getElementById("tr-count").textContent = `${TSES.done + 1} of ${SES_LEN}`;
+}
+
+function revealT() {
+  if (TRANS_REVEALED) return;
+  TRANS_REVEALED = true;
+  document.getElementById("tr-input").disabled = true;
+  document.getElementById("tr-reveal-btn").style.display = "none";
+  document.getElementById("tr-answer-area").innerHTML = `
+    <div class="tr-answer-card">
+      <div class="tr-answer-label">Answer</div>
+      <div class="tr-answer-sk">${TCUR.sk}</div>
+      ${TCUR.hint ? `<div class="tr-answer-hint">${TCUR.hint}</div>` : ""}
+    </div>`;
+  document.getElementById("tr-mark-row").style.display = "flex";
+}
+
+function markT(ok) {
+  if (!TAPP.scores) TAPP.scores = {};
+  const prev = TAPP.scores[TCUR.id] ?? 0;
+  TAPP.scores[TCUR.id] = ok ? Math.min(prev + 1, 5) : Math.max(prev - 1, 0);
+  TAPP.answered = (TAPP.answered || 0) + 1;
+  if (ok) TAPP.correct = (TAPP.correct || 0) + 1;
+  localStorage.setItem(TRANS_KEY, JSON.stringify(TAPP));
+  TSES.done++;
+  if (ok) TSES.ok++;
+  nextT();
+}
+
+function showTransSummary() {
+  const pct = TSES.done ? Math.round(TSES.ok / TSES.done * 100) : 0;
+  document.getElementById("sum-pct").textContent = pct + "%";
+  document.getElementById("sum-frac").textContent = `${TSES.ok} of ${TSES.done} correct`;
+  const circumference = 2 * Math.PI * 56;
+  const ringFill = document.getElementById("sum-ring-fill");
+  if (ringFill) setTimeout(() => { ringFill.style.strokeDashoffset = circumference * (1 - pct / 100); }, 100);
+  const msg = pct >= 80 ? "Strong session — keep the momentum." :
+              pct >= 60 ? "Good work. The tricky ones are queued for more practice." :
+                          "Rough session — but that's what the drill is for. Those sentences come back.";
+  document.getElementById("sum-msg").textContent = msg;
+  const tmas = ACTIVE_TS.filter(t => (TAPP.scores[t.id] ?? 0) >= 4).length;
+  document.getElementById("sum-stats").innerHTML = `
+    <div class="scard"><div class="val">${TAPP.answered || 0}</div><div class="lbl">Total</div></div>
+    <div class="scard"><div class="val">${tmas}</div><div class="lbl">Mastered</div></div>
+    <div class="scard"><div class="val">${ACTIVE_TS.length}</div><div class="lbl">Pool</div></div>`;
+  document.getElementById("sum-again-btn").onclick = () => startTransSession(TSES.level);
+  show("summary");
+}
+
+function toggleHints() {
+  SHOW_HINTS = !SHOW_HINTS;
+  document.getElementById("hint-tog").textContent = SHOW_HINTS ? "Hide hint" : "Show hint";
+  if (TCUR) {
+    const hintEl = document.getElementById("tr-hint");
+    hintEl.style.display = (SHOW_HINTS && TCUR.hint) ? "" : "none";
+    if (TRANS_REVEALED) {
+      const ansHint = document.querySelector(".tr-answer-hint");
+      if (ansHint) ansHint.style.display = SHOW_HINTS ? "" : "none";
+    }
+  }
 }
 
 // THEME TOGGLE
