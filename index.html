@@ -1668,6 +1668,26 @@ function toggleTheme() {
   } catch(e) {}
 }
 
+// ── PASTE NEW GRAMMAR QUESTIONS HERE ─────────────────────────────────────────
+// One question per line, tab-separated. Lines starting with # are ignored.
+// Fields: id [TAB] tag [TAB] sentence(with ___) [TAB] answer [TAB] dist1,dist2,dist3 [TAB] translation [TAB] rule [TAB] notes
+// tag is shown as the grammar point label during the quiz (e.g. "dative after k")
+// Example:
+// g_x1	dative after k	Išiel k ___u lekárovi.	svojmu	môjmu,vášmu,tvojmu	He went to his doctor.	k + dative	svôj → svojmu
+const USER_GQ = `
+`;
+// ─────────────────────────────────────────────────────────────────────────────
+for (const line of USER_GQ.split('\n')) {
+  const t = line.trim();
+  if (!t || t.startsWith('#')) continue;
+  const [id, tag, sentence, answer, dists, translation, rule, notes] = t.split('\t');
+  if (!id || !sentence || !answer) continue;
+  const distractors = (dists||'').split(',').map(s=>s.trim()).filter(Boolean);
+  QS.push({ id, tag:tag||'', sentence, answer, distractors,
+    full: sentence.replace('___', "<b class='ans'>"+answer+"</b>"),
+    translation:translation||'', rule:rule||'', notes:notes||'' });
+}
+
 // ── PASTE NEW VOCAB QUESTIONS HERE ───────────────────────────────────────────
 // One question per line, tab-separated. Lines starting with # are ignored.
 // Fields: id [TAB] tag [TAB] sentence(with ___) [TAB] answer [TAB] dist1,dist2,dist3 [TAB] translation [TAB] rule [TAB] notes
