@@ -1240,6 +1240,23 @@ const TS = [
   { id:"tva18", level:"very_advanced", en:"He endured it for years in silence, but bearing something quietly is not the same as accepting it.", sk:"Znášal to roky bez slova, ale znášať niečo v tichu nie je to isté ako prijať to.", hint:"znášať = to endure/bear (imperfective); roky bez slova = for years without a word; infinitive clause as subject" },
 ];
 
+// ── PASTE NEW TRANSLATION SENTENCES HERE ─────────────────────────────────────
+// One sentence per line, tab-separated. Lines starting with # are ignored.
+// Fields: id [TAB] level [TAB] english [TAB] slovak [TAB] hint
+// level must be: beginner | intermediate | advanced | very_advanced
+// Example:
+// ts_x1	intermediate	She is tired but happy.	Je unavená, ale šťastná.	ale = but (contrast); unavená, šťastná — fem. nominative
+const USER_TS = `
+`;
+// ─────────────────────────────────────────────────────────────────────────────
+for (const line of USER_TS.split('\n')) {
+  const t = line.trim();
+  if (!t || t.startsWith('#')) continue;
+  const [id, level, en, sk, hint] = t.split('\t');
+  if (!id || !level || !en || !sk) continue;
+  TS.push({ id, level, en, sk, hint: hint || '' });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // STORAGE
 // ─────────────────────────────────────────────────────────────────────────────
